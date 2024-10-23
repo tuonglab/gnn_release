@@ -1,0 +1,6 @@
+dataset_v2
+test_data_v2/*/processed
+*.error
+*.log
+*.out
+__pycache__/
