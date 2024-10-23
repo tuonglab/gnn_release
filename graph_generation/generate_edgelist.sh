@@ -10,6 +10,10 @@
 #SBATCH -e edge_gen.error
 #SBATCH -o edge_gen.out
 
+# Activate the virtual environment
 source /scratch/project/tcr_ml/gnn_env/bin/activate
-# python process.py
-python /scratch/project/tcr_ml/GNN/graph_generation/create_edgelist.py
+
+# Run the edge list generation script with actual paths
+python /scratch/project/tcr_ml/GNN/graph_generation/create_edgelist.py \
+    --root-dir reference_data/control \
+    --directory /scratch/project/tcr_ml/GNN/reference_data/control/raw

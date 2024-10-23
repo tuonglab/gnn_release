@@ -5,4 +5,3 @@ seaborn
 networkx
 biopython
 https://pytorch.org/get-started/locally/ # torch==2.3.1+cu121
-pca

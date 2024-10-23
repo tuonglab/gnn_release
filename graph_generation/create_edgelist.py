@@ -1,10 +1,11 @@
+import argparse
 from Bio.PDB import PDBParser
-
 import glob
 import subprocess
 import os
 import tarfile
 import shutil
+from concurrent.futures import ThreadPoolExecutor
 
 
 def extract_tar_file(tar_file) -> str:
@@ -17,13 +18,10 @@ def extract_tar_file(tar_file) -> str:
     Returns:
     str: The path to the extracted directory.
     """
-    # Rest of the code...
-    # Get the TMPDIR environment variable, or use a default directory
     directory = os.getenv("TMPDIR", "/tmp/dm")
     base_name = os.path.splitext(os.path.splitext(os.path.basename(tar_file))[0])[0]
     tar_directory = os.path.join(directory, base_name)
 
-    # Use Python's tarfile module to extract the tar file
     with tarfile.open(tar_file, "r:gz") as tar:
         tar.extractall(path=tar_directory)
 
@@ -43,25 +41,19 @@ def process_tar_file(tar_file, output_base_dir) -> None:
         None
     """
     tar_directory = extract_tar_file(tar_file)
-    # Get the list of extracted files
     extracted_files = os.listdir(tar_directory)
     output_dir = os.path.join(
         output_base_dir,
         os.path.basename(tar_directory),
     )
-    output_dir += "_edges"  # Append 'edges' to the output directory name
-    # Ensure the output directory exists
+    output_dir += "_edges"  
     os.makedirs(output_dir, exist_ok=True)
-
-    from concurrent.futures import ThreadPoolExecutor
 
     def process_pdb_file(file):
         if "rank_001" in file and file.endswith(".pdb"):
             pdb_file = os.path.join(tar_directory, file)
-            # Define the output directory based on the extracted file name
             check_all_distances(pdb_file, output_dir)
 
-    # Process only the rank_001 PDB files
     print("Processing extracted files")
     with ThreadPoolExecutor() as executor:
         executor.map(process_pdb_file, extracted_files)
@@ -70,7 +62,6 @@ def process_tar_file(tar_file, output_base_dir) -> None:
     tar_output_file = f"{output_dir}.tar.gz"
     subprocess.run(["tar", "-czf", tar_output_file, "-C", output_dir, "."])
 
-    # Remove the output directory after tarring
     shutil.rmtree(output_dir)
 
 
@@ -84,21 +75,14 @@ def check_all_distances(pdb_file, output_dir):
 
     Returns:
     None
-
-    Raises:
-    None
-
     """
     try:
         parser = PDBParser()
         structure = parser.get_structure("protein", pdb_file)
-
-        # Generate the output file name based on the input PDB file name
         pdb_file_name = os.path.basename(pdb_file)
         output_file_name = pdb_file_name.replace(".pdb", "_edge.txt")
         output_file = os.path.join(output_dir, output_file_name)
 
-        # Open the edge list file
         with open(output_file, "w") as f:
             for model in structure:
                 for chain in model:
@@ -119,7 +103,6 @@ def check_all_distances(pdb_file, output_dir):
                             )
                             distance = atom1 - atom2
                             if distance <= 8.0:
-                                # Write an edge to the file
                                 f.write(
                                     f"{residue1.get_resname()} {residue1.id[1]} {residue2.get_resname()} {residue2.id[1]}\n"
                                 )
@@ -128,17 +111,18 @@ def check_all_distances(pdb_file, output_dir):
 
 
 def main():
-    # Specify the directory containing the tar files
-    # Replace with your directory path
-    tar_dir = "/scratch/project/tcr_ml/GNN/raw"
-    output_base_dir = "/scratch/project/tcr_ml/GNN/reference_data/control/raw"
+    parser = argparse.ArgumentParser(description="Process tar files and generate edge lists.")
+    parser.add_argument("--tar-dir", required=True, help="Directory containing the tar files.")
+    parser.add_argument("--output-base-dir", required=True, help="Base directory where the output will be stored.")
 
-    # Get a list of all tar files in the directory
-    tar_files = glob.glob(os.path.join(tar_dir, "*.tar.gz"))
+    args = parser.parse_args()
+
+    # Get the list of all tar files in the directory
+    tar_files = glob.glob(os.path.join(args.tar_dir, "*.tar.gz"))
 
     # Process each tar file sequentially
     for tar_file in tar_files:
-        process_tar_file(tar_file, output_base_dir)
+        process_tar_file(tar_file, args.output_base_dir)
 
 
 if __name__ == "__main__":

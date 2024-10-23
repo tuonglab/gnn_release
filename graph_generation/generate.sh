@@ -10,7 +10,10 @@
 #SBATCH -e pytorch.error
 #SBATCH -o pytorch.out
 
+# Activate the virtual environment
 source /scratch/project/tcr_ml/gnn_env/bin/activate
-python process.py
-# module load biopython
-# python /scratch/project/tcr_ml/GNN/create_edgelist.py
+
+# Run the process.py script with actual arguments
+python /scratch/project/tcr_ml/GNN/graph_generation/process.py \
+    --root-dir reference_data/control \
+    --directory /scratch/project/tcr_ml/GNN/reference_data/control/raw

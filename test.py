@@ -1,6 +1,7 @@
 import heapq
 import os
 import shutil
+import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,9 +20,7 @@ torch.manual_seed(46)
 np.random.seed(46)
 
 # Load model path to save here
-MODEL_PATH = "model_training/trial_hyperparameter_new_zero"
 MODEL_NAME = "best_model.pt"
-MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 
 def load_test_data(cancer_path: str, control_path: str):
     """
@@ -233,29 +232,38 @@ def test(
     repr_plot(sample_reprensatative_pred, sample_reprensatative_label, MODEL_PATH)
     return sample_auc
 
-def test_trained_model() -> None:
+def test_trained_model(cancer_path, control_path, model_path) -> None:
     """
-    Easy function to test trained model
+    Function to test a trained model using test data from cancer and control paths
 
+    Args:
+        cancer_path (str): Path to the cancer test dataset.
+        control_path (str): Path to the control test dataset.
+        model_path (str): Path where the model is saved.
     """
-    test_cancer_directory = "/scratch/project/tcr_ml/GNN/test_data_v2/zero_data/processed"
-    test_control_directory = "/scratch/project/tcr_ml/GNN/test_data_v2/control/processed"
-    filenames, test_set = load_test_data(test_cancer_directory, test_control_directory)
+    filenames, test_set = load_test_data(cancer_path, control_path)
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False)
+    model_file = os.path.join(model_path, MODEL_NAME)
 
     model = GATv2(nfeat=test_set[0][0].num_node_features, nhid=375, nclass=2, dropout=0.17)
     model.to(device)
 
-    # model = GATv2(nfeat=test_set[0][0].num_node_features, nhid=256, nclass=2, dropout=0.15)
-
-    # Test the model on the test samples
-    avg_auc_score = test(model, MODEL_FILE, test_loader, filenames)
+    avg_auc_score = test(model, model_path, test_loader, filenames)
     print(f"Test AUC Score: {avg_auc_score}")
 
 if __name__ == "__main__":
-    # main()
-    test_trained_model()
-    # After the main function is done
-    if os.path.exists(MODEL_PATH + "/train.out"):
-        os.remove(MODEL_PATH + "/train.out")
-    shutil.move("train.out", MODEL_PATH)
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="Test a trained model with cancer and control datasets.")
+    parser.add_argument('--cancer-path', type=str, required=True, help="Path to the cancer test dataset.")
+    parser.add_argument('--control-path', type=str, required=True, help="Path to the control test dataset.")
+    parser.add_argument('--model-path', type=str, required=True, help="Path to the saved model file.")
+
+    args = parser.parse_args()
+
+    # Call the test function with the arguments
+    test_trained_model(args.cancer_path, args.control_path, args.model_path)
+
+    # After the function is done
+    if os.path.exists(args.model_path + "/train.out"):
+        os.remove(args.model_path + "/train.out")
+    shutil.move("train.out", args.model_path)
