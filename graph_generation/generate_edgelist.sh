@@ -15,5 +15,5 @@ source /scratch/project/tcr_ml/gnn_env/bin/activate
 
 # Run the edge list generation script with actual paths
 python /scratch/project/tcr_ml/GNN/graph_generation/create_edgelist.py \
-    --root-dir reference_data/control \
-    --directory /scratch/project/tcr_ml/GNN/reference_data/control/raw
+    --tar-dir /scratch/project/tcr_ml/colabfold/results_2/prediction/phs002517 \
+    --output-base-dir /scratch/project/tcr_ml/gnn_release/test_data_v2/phs002517/raw
