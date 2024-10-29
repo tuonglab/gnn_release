@@ -125,5 +125,4 @@ def main():
         process_tar_file(tar_file, args.output_base_dir)
 
 
-if __name__ == "__main__":
-    main()
+main()
