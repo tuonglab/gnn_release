@@ -22,13 +22,15 @@ np.random.seed(46)
 # Load model path to save here
 MODEL_NAME = "best_model.pt"
 
-def load_test_data(cancer_path: str, control_path: str):
+import os
+from typing import List, Tuple, Any
+
+def load_test_data(data_path: str) -> Tuple[List[str], List[Any]]:
     """
-    Load test data from the specified paths.
+    Load test data from the specified path.
 
     Args:
-        cancer_path (str): The path to the directory containing cancer data files.
-        control_path (str): The path to the directory containing control data files.
+        data_path (str): The path to the directory containing both cancer and control data files.
 
     Returns:
         Tuple[List[str], List[Any]]: A tuple containing two lists. The first list contains the modified filenames,
@@ -36,25 +38,21 @@ def load_test_data(cancer_path: str, control_path: str):
     """
     test_set = []
     file_set = []
-    if os.path.isdir(cancer_path):
-        for filename in os.listdir(cancer_path):
-            file_path = os.path.join(cancer_path, filename)
-            graphs = load_graphs(file_path)
-            prefix = filename.split("_cdr3")[0]
-            new_filename = prefix + "_cdr3.csv"
-            test_set.append(graphs)
-            file_set.append(new_filename)
-
-    if os.path.isdir(control_path):
-        for filename in os.listdir(control_path):
-            file_path = os.path.join(control_path, filename)
-            graphs = load_graphs(file_path)
-            prefix = filename.split("_cdr3")[0]
-            new_filename = prefix + "_cdr3.csv"
-            test_set.append(graphs)
-            file_set.append(new_filename)
+    
+    if os.path.isdir(data_path):
+        for filename in os.listdir(data_path):
+            file_path = os.path.join(data_path, filename)
+            
+            # Check if it's a file and skip directories
+            if os.path.isfile(file_path):
+                graphs = load_graphs(file_path)
+                prefix = filename.split("_cdr3")[0]
+                new_filename = prefix + "_cdr3.csv"
+                test_set.append(graphs)
+                file_set.append(new_filename)
 
     return file_set, test_set
+
 
 def repr_plot(
     sample_representative_pred: list, sample_representative_label: list, output_dir: str
@@ -109,7 +107,7 @@ def repr_plot(
     plt.close()
 
 def test(
-    model: torch.nn.Module, model_path: str, loader: DataLoader, filenames: list[str]
+    model: torch.nn.Module, model_file: str, loader: DataLoader, filenames: list[str]
 ) -> float:
     """
     Test the model on the given samples and calculate the AUC.
@@ -174,6 +172,7 @@ def test(
         directories = [
             "/scratch/project/tcr_ml/colabfold/cancer",
             "/scratch/project/tcr_ml/colabfold/control",
+            "/scratch/project/tcr_ml/colabfold/phs002517",
         ]
 
         # Initialize sequences as an empty list
@@ -199,7 +198,7 @@ def test(
                 file.write(f"{sequence},{score}\n")
 
     # Load the model from the file
-    state_dict = torch.load(model_path)
+    state_dict = torch.load(model_file)
     model.load_state_dict(state_dict)
     model.eval()  # put in eval mode
 
@@ -228,11 +227,11 @@ def test(
         sample_reprensatative_pred.append(float(mean_sample_scores))
         sample_reprensatative_label.append(float(mean_sample_labels))
 
-    sample_auc = roc_auc_score(sample_reprensatative_label, sample_reprensatative_pred)
-    repr_plot(sample_reprensatative_pred, sample_reprensatative_label, MODEL_PATH)
-    return sample_auc
+    # sample_auc = roc_auc_score(sample_reprensatative_label, sample_reprensatative_pred)
+    # repr_plot(sample_reprensatative_pred, sample_reprensatative_label, MODEL_PATH)
+    return "Done"
 
-def test_trained_model(cancer_path, control_path, model_path) -> None:
+def test_trained_model(dataset_path, model_path) -> None:
     """
     Function to test a trained model using test data from cancer and control paths
 
@@ -241,29 +240,28 @@ def test_trained_model(cancer_path, control_path, model_path) -> None:
         control_path (str): Path to the control test dataset.
         model_path (str): Path where the model is saved.
     """
-    filenames, test_set = load_test_data(cancer_path, control_path)
+    filenames, test_set = load_test_data(dataset_path)
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False)
     model_file = os.path.join(model_path, MODEL_NAME)
 
-    model = GATv2(nfeat=test_set[0][0].num_node_features, nhid=375, nclass=2, dropout=0.17)
+    model = GATv2(nfeat=test_set[0][0].num_node_features, nhid=256, nclass=2, dropout=0.17)
     model.to(device)
 
-    avg_auc_score = test(model, model_path, test_loader, filenames)
-    print(f"Test AUC Score: {avg_auc_score}")
+    test(model, model_file, test_loader, filenames)
 
 if __name__ == "__main__":
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description="Test a trained model with cancer and control datasets.")
-    parser.add_argument('--cancer-path', type=str, required=True, help="Path to the cancer test dataset.")
-    parser.add_argument('--control-path', type=str, required=True, help="Path to the control test dataset.")
+    parser = argparse.ArgumentParser(description="Test a trained model with datasets.")
+    parser.add_argument('--dataset-path', type=str, required=True, help="Path to the test dataset.")
     parser.add_argument('--model-path', type=str, required=True, help="Path to the saved model file.")
 
     args = parser.parse_args()
+    MODEL_PATH = args.model_path
 
     # Call the test function with the arguments
-    test_trained_model(args.cancer_path, args.control_path, args.model_path)
+    test_trained_model(args.dataset_path,args.model_path)
 
     # After the function is done
     if os.path.exists(args.model_path + "/train.out"):
         os.remove(args.model_path + "/train.out")
-    shutil.move("train.out", args.model_path)
+    # shutil.move("train.out", args.model_path)

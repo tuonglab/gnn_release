@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 
 # Base directory for the project
-base_directory = "/scratch/project/tcr_ml/GNN/model_training/trial_hyperparameter_optuna_zero"
+base_directory = "/scratch/project/tcr_ml/gnn_release/model"
 
 # Directory where the files are stored
 directory = f"{base_directory}/scores/"
@@ -92,3 +92,24 @@ plt.legend()  # Add a legend
 
 plt.show()
 plt.savefig(save_directory + "/length_distribution_normalized.png")
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load the data from CSV file
+csv_file_path = f'{directory}/metric_scores.csv'  # replace with actual file path
+data = pd.read_csv(csv_file_path)
+
+# Select metrics columns for plotting
+metrics = ["Normalized KL Divergence", "Hellinger Score", "Cosine Similarity", "Mean Score", "Total Variation Distance"]
+
+# Create boxplots for each metric
+plt.figure(figsize=(24, 10))
+data[metrics].boxplot()
+plt.title("Boxplots of Cancer CDR3 Scores by Metric")
+plt.ylabel("Score")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+plt.savefig(f"{save_directory}/metric_boxplots.png")
