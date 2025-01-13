@@ -33,7 +33,7 @@ AMINO_ACID_MAPPING = {
     "TYR": "Y",
 }
 # Read the PCA encoding matrix
-PCA_ENCODING = pd.read_csv("/scratch/project/tcr_ml/GNN/graph_generation/AAidx_PCA_2024.txt", sep="\t", index_col=0)
+PCA_ENCODING = pd.read_csv("/scratch/project/tcr_ml/gnn_release/graph_generation/AAidx_PCA_2024.txt", sep="\t", index_col=0)
 
 CANCEROUS = 1
 CONTROL = 0
