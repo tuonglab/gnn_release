@@ -145,53 +145,70 @@ def test(
 
         return new_filename
 
-    def save_scores_to_file(
-        scores: list, original_filename: str, filename: str, directory: str
-    ) -> None:
+    def save_scores_to_file(scores: list, original_filename: str, filename: str, directory: str) -> None:
         """
-        Save scores to a file along with corresponding sequences.
-
+        Save scores to a file along with corresponding sequences, searching recursively for CSV files only.
+        
         Args:
             scores (list): List of scores.
             original_filename (str): Name of the original file.
             filename (str): Name of the file to be saved.
             directory (str): Directory where the file will be saved.
-
+        
         Returns:
             None
-
+        
         Raises:
-            FileNotFoundError: If the original file is not found in any of the directories.
-
+            FileNotFoundError: If the original file is not found in the base directory or its subdirectories.
         """
+        # Create the output directory if it doesn't exist
         os.makedirs(directory, exist_ok=True)
-        # Create the full path for the file
+        
+        # Create the full path for the output file
         file_path = os.path.join(directory, filename)
-
-        # Define the directories where the original files might be
-        directories = [
-            "/scratch/project/tcr_ml/colabfold/cancer",
-            "/scratch/project/tcr_ml/colabfold/control",
-            "/scratch/project/tcr_ml/colabfold/phs002517",
-        ]
-
-        # Initialize sequences as an empty list
-        sequences = []
-
-        # Try to read the sequences from the original file in each directory
-        for dir in directories:
-            try:
-                df = pd.read_csv(os.path.join(dir, original_filename))
-                sequences = df["sequence"].tolist()  # Assuming 'sequence' is the column name
-                break  # If the file is successfully read, break the loop
-            except FileNotFoundError:
-                continue  # If the file is not found in the current directory, continue to the next directory
-
-        # If the sequences list is still empty after trying all directories, print an error message
-        if not sequences:
-            print(f"Error: The file {original_filename} was not found in any of the directories.")
-            return
-
+        
+        # Base directory for colabfold
+        base_dir = "/scratch/project/tcr_ml/colabfold"
+        
+        # Initialize sequences as None
+        sequences = None
+        found_file = None
+        
+        # Walk through all subdirectories, focusing only on CSV files
+        for root, _, files in os.walk(base_dir):
+            # Filter for CSV files only
+            csv_files = [f for f in files if f.endswith('.csv')]
+            
+            # Skip this directory if there are no CSV files
+            if not csv_files:
+                continue
+                
+            # Check if our target file is among the CSV files
+            if original_filename in csv_files:
+                try:
+                    df = pd.read_csv(os.path.join(root, original_filename))
+                    sequences = df["sequence"].tolist()
+                    found_file = os.path.join(root, original_filename)
+                    break
+                except Exception as e:
+                    print(f"Error reading CSV file {os.path.join(root, original_filename)}: {str(e)}")
+                    continue
+        
+        # If sequences weren't found, raise an error
+        if sequences is None:
+            raise FileNotFoundError(
+                f"Error: The CSV file {original_filename} was not found in {base_dir} or any of its subdirectories."
+            )
+        
+        # Print the location where the file was found (helpful for debugging)
+        print(f"Found and read CSV file from: {found_file}")
+        
+        # Verify that the number of sequences matches the number of scores
+        if len(sequences) != len(scores):
+            raise ValueError(
+                f"Number of sequences ({len(sequences)}) does not match number of scores ({len(scores)})"
+            )
+        
         # Open the file and write the sequences and scores
         with open(file_path, "w") as file:
             for sequence, score in zip(sequences, scores):
