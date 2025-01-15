@@ -7,7 +7,7 @@ def main():
     parser = argparse.ArgumentParser(description="Process GNN dataset.")
     parser.add_argument("--root-dir", required=True, help="Root directory where the data should be stored.")
     parser.add_argument("--directory", required=True, help="Directory containing the .tar.gz files.")
-    parser.add_argument("--cancer", action="store_true", help="Flag to indicate cancer data processing.")
+    parser.add_argument("--cancer", action="store_true", help="Flag to indicate cancer data processing.") # will not be used if predicitng completely unknown data
 
     args = parser.parse_args()
 
@@ -32,7 +32,7 @@ def main():
     ]
 
     # Create an instance of the MultiGraphDataset class
-    new_root = f"../{root_dir}"
+    new_root = f"{root_dir}"
     dataset = MultiGraphDataset(root=new_root, samples=samples, cancer=cancer_flag)
 
     # Process the data
