@@ -168,6 +168,8 @@ def test(
         file_path = os.path.join(directory, filename)
         
         # Base directory for colabfold
+        # Define this as your base directory where you store your CSV files which you submit to Alphafold
+        # This is important for the function to find the CSV files and name the files and link the sequences to the scores
         base_dir = "/scratch/project/tcr_ml/colabfold"
         
         # Initialize sequences as None
