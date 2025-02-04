@@ -204,16 +204,15 @@ def test(
         
         # Print the location where the file was found (helpful for debugging)
         print(f"Found and read CSV file from: {found_file}")
-        
-        # Verify that the number of sequences matches the number of scores
-        if len(sequences) != len(scores):
-            raise ValueError(
-                f"Number of sequences ({len(sequences)}) does not match number of scores ({len(scores)})"
-            )
-        
+
+        # Use the maximum length between sequences and scores
+        max_length = max(len(sequences), len(scores))
+
         # Open the file and write the sequences and scores
         with open(file_path, "w") as file:
-            for sequence, score in zip(sequences, scores):
+            for i in range(max_length):
+                sequence = sequences[i] if i < len(sequences) else "N/A"
+                score = scores[i] if i < len(scores) else "N/A"
                 file.write(f"{sequence},{score}\n")
 
     # Load the model from the file
@@ -227,11 +226,23 @@ def test(
     for i, sample in enumerate(loader):  # iterate over samples
         sample_scores = []
         sample_labels = []
-        for j, data in enumerate(sample):  # iterate over TCR sequences in each sample
-            out = model(data.x, data.edge_index, data.batch)
-            probabilities = torch.sigmoid(out)
-            sample_scores.extend(probabilities[:, 1].tolist())
-            sample_labels.extend(data.y.tolist())
+        try:
+            for j, data in enumerate(sample):  # iterate over TCR sequences in each sample
+
+                # Check dimensions before model forward pass
+                if data.x.dim() != 2:
+                    raise ValueError(f"Input features must be 2-dimensional. Current shape: {data.x.shape}")
+                
+                out = model(data.x, data.edge_index, data.batch)
+                probabilities = torch.sigmoid(out)
+                sample_scores.extend(probabilities[:, 1].tolist())
+                sample_labels.extend(data.y.tolist())
+                
+        except Exception as e:
+            print(f"\nError processing file: {filenames[i]}")
+            print(f"Error details: {str(e)}")
+            print(f"Error type: {type(e).__name__}")
+            continue
 
         # calculate the mean feature importance score for the sample
         mean_sample_scores = np.mean(sample_scores)
