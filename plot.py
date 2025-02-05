@@ -2,15 +2,65 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import numpy as np
 
 # Base directory for the project
 base_directory = "/scratch/project/tcr_ml/gnn_release/model"
 
 # Directory where the files are stored
-directory = f"{base_directory}/scores/"
+directory = "/scratch/project/tcr_ml/gnn_release/model_v2_control/scores/"
 
 # Directory to save the plots
-save_directory = base_directory
+save_directory = directory
+
+def identify_outliers_with_files(data, column, directory):
+    # Calculate Q1, Q3, and IQR
+    Q1 = data[column].quantile(0.25)
+    Q3 = data[column].quantile(0.75)
+    IQR = Q3 - Q1
+    
+    # Define bounds for outliers
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    
+    # Find outliers
+    outliers = data[
+        (data[column] < lower_bound) | 
+        (data[column] > upper_bound)
+    ]
+    
+    print(f"\nOutliers for {column}:")
+    print(f"Number of outliers: {len(outliers)}")
+    print(f"Lower bound: {lower_bound:.4f}")
+    print(f"Upper bound: {upper_bound:.4f}")
+    
+    # Get list of all relevant files in directory
+    all_files = [f for f in os.listdir(directory) if f.endswith('.txt')]
+    
+    # For each outlier value
+    print("\nOutlier values and their source files:")
+    for score in outliers[column].sort_values(ascending=False):
+        files_with_score = []
+        # Check each file
+        for filename in all_files:
+            file_path = os.path.join(directory, filename)
+            try:
+                file_data = pd.read_csv(
+                    file_path,
+                    sep=",",
+                    header=None,
+                    names=["CDR3_Sequence", "Cancer_Score"]
+                )
+                # Check if this score exists in the file
+                if score in file_data["Cancer_Score"].values:
+                    files_with_score.append(filename)
+            except:
+                continue
+                
+        print(f"Score: {score:.6f}")
+        print(f"Found in files: {files_with_score}\n")
+
+    return outliers, lower_bound, upper_bound
 
 # Initialize empty dataframes for cancer and control scores
 cancer_data = pd.DataFrame(columns=["CDR3_Sequence", "Cancer_Score", "CDR3_Length"])
@@ -54,7 +104,7 @@ cancer_data_filtered['Group'] = 'Cancer'
 control_data_filtered['Group'] = 'Control'
 combined_data = pd.concat([cancer_data_filtered, control_data_filtered])
 
-# Plot box plots of Cancer Scores by CDR3 Length, grouped by Cancer and Control
+# Plot 1: Box plots of Cancer Scores by CDR3 Length
 plt.figure(figsize=(20, 10))
 sns.boxplot(
     x="CDR3_Length", 
@@ -67,49 +117,55 @@ plt.title("Box Plots of Cancer Scores by CDR3 Sequence Length (Cancer vs. Contro
 plt.xlabel("CDR3 Sequence Length")
 plt.ylabel("Cancer Score")
 plt.legend(title="Group")
-plt.xticks(rotation=90)  # Rotate x-ticks for better readability
-
-plt.show()
+plt.xticks(rotation=90)
 plt.savefig(save_directory + "/cancer_control_boxplots.png")
-
-# Plot for CDR3 length distribution
-plt.figure(figsize=(15, 10))
-# Plot for cancer data
-sns.histplot(
-    cancer_data["CDR3_Length"], bins=30, color="r", stat="density", label="Cancer"
-)
-# Plot for control data
-sns.histplot(
-    control_data["CDR3_Length"], bins=30, color="b", stat="density", label="Control"
-)
-plt.xlim(5, 30)  # Adjust x-axis limits
-plt.xticks(range(5, 30, 1))  # Set x-ticks to step by 1
-plt.title("Distribution of CDR3 Sequence Lengths")
-plt.xlabel("CDR3 Sequence Length")
-plt.ylabel("Density")
-
-plt.legend()  # Add a legend
-
-plt.show()
-plt.savefig(save_directory + "/length_distribution_normalized.png")
+plt.close()
 
 
-import pandas as pd
-import matplotlib.pyplot as plt
-
-# Load the data from CSV file
-csv_file_path = f'{directory}/metric_scores.csv'  # replace with actual file path
+# Load metric scores data
+csv_file_path = f'{directory}/metric_scores.csv'
 data = pd.read_csv(csv_file_path)
 
 # Select metrics columns for plotting
-metrics = ["Normalized KL Divergence", "Hellinger Score", "Cosine Similarity", "Mean Score", "Total Variation Distance"]
+metrics = [ "Mean Score"]
 
-# Create boxplots for each metric
+plt.figure(figsize=(20, 10))
+plt.scatter(
+    range(len(data["Mean Score"])),
+    data["Mean Score"],
+    alpha=0.6,
+    c='blue'
+)
+plt.title("Distribution of Mean Scores Across Files")
+plt.xlabel("File Index")
+plt.ylabel("Mean Score")
+plt.grid(True, alpha=0.3)
+plt.savefig(save_directory + "/mean_scores_scatter.png")
+plt.close()
+
+# Plot 4: Create boxplot with highlighted outliers
 plt.figure(figsize=(24, 10))
-data[metrics].boxplot()
-plt.title("Boxplots of Cancer CDR3 Scores by Metric")
+bp = plt.boxplot([data[metric] for metric in metrics], labels=metrics)
+plt.title("Boxplots of Cancer CDR3 Scores by Metric with Outliers")
 plt.ylabel("Score")
 plt.xticks(rotation=45)
+
+# Highlight outliers in red
+for i in range(len(metrics)):
+    outliers = bp['fliers'][i]
+    outliers.set_color('red')
+    
 plt.tight_layout()
-plt.show()
-plt.savefig(f"{save_directory}/metric_boxplots.png")
+plt.savefig(f"{save_directory}/metric_boxplots_with_outliers.png")
+plt.close()
+
+# Perform outlier analysis for each metric
+for metric in metrics:
+    if metric!="Mean Score":
+        continue
+    outliers, _, _ = identify_outliers_with_files(data, metric, directory)
+    
+    # Save outliers to CSV
+    outlier_file = f"{save_directory}/outliers_{metric.lower().replace(' ', '_')}.csv"
+    outliers.to_csv(outlier_file, index=False)
+    print(f"\nOutliers saved to: {outlier_file}")
