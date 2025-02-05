@@ -15,7 +15,7 @@ torch.manual_seed(46)
 np.random.seed(46)
 
 # Load model path to save here
-MODEL_PATH = "model_training/trial_hyperparameter_new_zero"
+MODEL_PATH = "model_v2_control/"
 MODEL_NAME = "best_model.pt"
 MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 
@@ -175,8 +175,8 @@ def main() -> None:
 
     # Specify the directory you want to traverse
     # replace with your directory path
-    train_cancer_directory = "/scratch/project/tcr_ml/GNN/dataset_v2/cancer/processed"
-    train_control_directory = "/scratch/project/tcr_ml/GNN/dataset_v2/control/processed"
+    train_cancer_directory = "/scratch/project/tcr_ml/gnn_release/dataset_v2/cancer/processed"
+    train_control_directory = "/scratch/project/tcr_ml/gnn_release/dataset_v2/control_new/processed"
 
     train_set = load_train_data(train_cancer_directory, train_control_directory)
 
@@ -191,3 +191,6 @@ def main() -> None:
 
     # Train the model on the training samples
     train(model, train_loader, num_epochs=500)
+
+if __name__ == "__main__":
+    main()
