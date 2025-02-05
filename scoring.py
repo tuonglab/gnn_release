@@ -31,6 +31,7 @@ def process_scores(directory) -> None:
 
         # Loop over all files in the directory
         for filename in os.listdir(directory):
+            print(filename)
             if filename.endswith(".txt"):
                 # Load data from text file (second column)
                 scores = np.loadtxt(
@@ -138,5 +139,5 @@ def process_scores(directory) -> None:
     plt.show()
 
 # Example usage
-directory = "/scratch/project/tcr_ml/gnn_release/model/scores"
+directory = "/scratch/project/tcr_ml/gnn_release/model_v2_control/scores"
 process_scores(directory)
