@@ -139,5 +139,5 @@ def process_scores(directory) -> None:
     plt.show()
 
 # Example usage
-directory = "/scratch/project/tcr_ml/gnn_release/model_v2_control/scores"
+directory = "/scratch/project/tcr_ml/gnn_release/legacy_model/scores"
 process_scores(directory)

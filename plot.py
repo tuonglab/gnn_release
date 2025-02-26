@@ -8,7 +8,7 @@ import numpy as np
 base_directory = "/scratch/project/tcr_ml/gnn_release/model"
 
 # Directory where the files are stored
-directory = "/scratch/project/tcr_ml/gnn_release/model_v2_control/scores/"
+directory = "/scratch/project/tcr_ml/gnn_release/legacy_model/scores/"
 
 # Directory to save the plots
 save_directory = directory

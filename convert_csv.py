@@ -15,7 +15,7 @@ def convert_to_csv(input_dir, output_dir):
     
     # Process each cdr3.txt file
     for file in os.scandir(input_dir):
-        if file.name.endswith('.tsv'):
+        if file.name.endswith('.txt'):
             input_file = Path(file.path)
             output_file = Path(output_dir) / f"{input_file.stem}.csv"
             
@@ -44,7 +44,7 @@ def convert_to_csv(input_dir, output_dir):
 
 if __name__ == "__main__":
     # Replace these paths with your actual paths
-    input_directory = "/QRISdata/Q7250/ZERO/zero_only_seq"
-    output_directory = "/scratch/project/tcr_ml/gnn_release/zero"
+    input_directory = "/QRISdata/Q7250/ZERO/sarcoma/tcr_cdr3"
+    output_directory = "/scratch/project/tcr_ml/colabfold/sarcoma_zero"
     
     convert_to_csv(input_directory, output_directory)
