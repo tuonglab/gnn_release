@@ -50,9 +50,10 @@ def process_tar_file(tar_file, output_base_dir) -> None:
     os.makedirs(output_dir, exist_ok=True)
 
     def process_pdb_file(file):
-        if "rank_001" in file and file.endswith(".pdb"):
+        if ("rank_001" in file and file.endswith(".pdb")) or  ("model_0" in file and file.endswith(".pdb")):
             pdb_file = os.path.join(tar_directory, file)
             check_all_distances(pdb_file, output_dir)
+
 
     print("Processing extracted files")
     with ThreadPoolExecutor() as executor:
