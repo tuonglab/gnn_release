@@ -34,14 +34,18 @@ def process_scores(directory) -> None:
             print(filename)
             if filename.endswith(".txt"):
                 # Load data from text file (second column)
-                scores = np.loadtxt(
+                scores = np.genfromtxt(
                     os.path.join(directory, filename),
                     delimiter=",",
                     usecols=1,
+                    dtype=float,
+                    encoding="utf-8",
+                    invalid_raise=False
                 )
 
-                # Normalize the scores to make them into probability distributions
-                normalised_scores = scores / np.sum(scores)
+                # Remove NaN values (ignore rows where the second column is "N/A" or missing)
+                scores = scores[~np.isnan(scores)]
+
 
                 # Generate a perfect score distribution
                 perfect_scores = np.ones_like(scores)
@@ -139,5 +143,5 @@ def process_scores(directory) -> None:
     plt.show()
 
 # Example usage
-directory = "/scratch/project/tcr_ml/gnn_release/legacy_model/scores"
+directory = "/scratch/project/tcr_ml/gnn_release/model_2025/scores"
 process_scores(directory)
