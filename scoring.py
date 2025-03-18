@@ -45,6 +45,7 @@ def process_scores(directory) -> None:
 
                 # Remove NaN values (ignore rows where the second column is "N/A" or missing)
                 scores = scores[~np.isnan(scores)]
+                normalised_scores = scores / np.sum(scores)
 
 
                 # Generate a perfect score distribution
