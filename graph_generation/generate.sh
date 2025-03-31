@@ -15,8 +15,8 @@ source /scratch/project/tcr_ml/gnn_env/bin/activate
 
 # Run the process.py script with actual arguments
 python /scratch/project/tcr_ml/gnn_release/graph_generation/process.py \
-    --root-dir  /scratch/project/tcr_ml/gnn_release/test_data_v2/sarcoma_zero \
-    --directory /scratch/project/tcr_ml/gnn_release/test_data_v2/sarcoma_zero/raw \
+    --root-dir  /scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue \
+    --directory /scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue/raw \
     --cancer
 
 # add/remove cancer flag depending on the dataset class type

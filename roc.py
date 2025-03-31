@@ -63,8 +63,8 @@ def plot_roc_curve(fpr, tpr, roc_auc):
     plt.close()
 
 # File paths - MODIFY THESE TO MATCH YOUR FILES
-cancer_file = '/scratch/project/tcr_ml/gnn_release/model_v2_control/scores_zero/metric_scores.csv'  # Replace with your cancer file path
-control_file = '/scratch/project/tcr_ml/gnn_release/model_v2_control/scores_control/metric_scores.csv'  # Replace with your control file path
+cancer_file = '/scratch/project/tcr_ml/gnn_release/model_2025_360/phs002517_scores/metric_scores.csv'  # Replace with your cancer file path
+control_file = '/scratch/project/tcr_ml/gnn_release/model_2025_360/control_leftover_scores/metric_scores.csv'  # Replace with your control file path
 
 try:
     # Load and prepare data

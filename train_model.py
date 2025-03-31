@@ -15,9 +15,10 @@ torch.manual_seed(46)
 np.random.seed(46)
 
 # Load model path to save here
-MODEL_PATH = "model_v2_control/"
+MODEL_PATH = "model_2025_ccdi_only"
 MODEL_NAME = "best_model.pt"
 MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
+
 
 class GATv2(torch.nn.Module):
     """
@@ -59,7 +60,7 @@ class GATv2(torch.nn.Module):
         nhid: int,
         nclass: int,
         dropout: float,
-        temperature: float = 1.1,
+        temperature: float = 1,
     ) -> None:
         super(GATv2, self).__init__()
         self.conv1 = GATv2Conv(nfeat, nhid, heads=16, dropout=dropout, concat=False)
@@ -79,8 +80,12 @@ class GATv2(torch.nn.Module):
         x /= self.temperature
         return x
 
+
 def train(
-    model: torch.nn.Module, loader: DataLoader, num_epochs: int = 100, patience: int = 15
+    model: torch.nn.Module,
+    loader: DataLoader,
+    num_epochs: int = 100,
+    patience: int = 15,
 ) -> None:
     """
     Trains the given model using the provided data loader for a specified number of epochs.
@@ -98,42 +103,49 @@ def train(
     # pos_weight = torch.tensor([28])  # Convert the float to a tensor
     criterion = torch.nn.BCEWithLogitsLoss()
     # criterion = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([25]))
-    optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.25)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=0.0005, weight_decay=0.25)
 
     best_loss = float("inf")  # Initialize the best loss
+    best_accuracy = 0.0
     patience_counter = 0
 
     for epoch in range(num_epochs):
         model.train()
         total_loss = 0
-        total_correct = 0  # Initialize a counter for the total number of correct predictions
+        total_correct = (
+            0  # Initialize a counter for the total number of correct predictions
+        )
         total_samples = 0  # Initialize a counter for the total number of samples
         for sample in loader:
             for data in sample:
                 optimizer.zero_grad()
                 out = model(data.x, data.edge_index, data.batch)
                 out = out[:, 1]
+
                 loss = criterion(out, data.y.float())
+                batch_size = data.y.size(0)
                 loss.backward()
                 optimizer.step()
-                total_loss += loss.item()
+                total_loss += loss.item() * batch_size
 
                 predicted = torch.round(torch.sigmoid(out.data))
                 total_correct += (predicted == data.y).sum().item()
-                total_samples += data.y.size(0)
-        avg_loss = total_loss / len(loader)  # Calculate average loss
+                total_samples += batch_size
+        avg_loss = total_loss / total_samples  # Calculate average loss
         accuracy = total_correct / total_samples  # Calculate accuracy
         print(f"Epoch: {epoch+1}, Loss: {avg_loss}, Accuracy: {accuracy}")
 
         # Check for early stopping
         if avg_loss < best_loss:
-            if avg_loss < best_loss:
-                best_loss = avg_loss
+            best_loss = avg_loss
             patience_counter = 0
             torch.save(
                 model.state_dict(),
                 MODEL_FILE,
             )
+        elif accuracy > best_accuracy:
+            best_accuracy = accuracy
+            patience_counter = 0
         else:
             patience_counter += 1
 
@@ -145,42 +157,59 @@ def train(
             )
             break
 
-def load_train_data(cancer_path: str, control_path: str):
+
+import os
+
+def load_train_data(cancer_paths: list, control_paths: list):
     """
     Load training data from the specified paths.
 
     Args:
-        cancer_path (str): The path to the directory containing cancer data files.
-        control_path (str): The path to the directory containing control data files.
+        cancer_paths (list): A list of directories containing cancer data files.
+        control_paths (list): A list of directories containing control data files.
 
     Returns:
-        list: A list of training samples
+        list: A list of training samples.
     """
     training_set = []
-    if os.path.isdir(cancer_path):
-        for filename in os.listdir(cancer_path):
-            file_path = os.path.join(cancer_path, filename)
-            graphs = load_graphs(file_path)
-            training_set.append(graphs)
 
-    if os.path.isdir(control_path):
-        for filename in os.listdir(control_path):
-            file_path = os.path.join(control_path, filename)
-            graphs = load_graphs(file_path)
-            training_set.append(graphs)
+    # Process cancer graphs
+    for cancer_path in cancer_paths:
+        if os.path.isdir(cancer_path):
+            for filename in os.listdir(cancer_path):
+                file_path = os.path.join(cancer_path, filename)
+                graphs = load_graphs(file_path)
+                training_set.append(graphs)
+
+    # Process control graphs
+    for control_path in control_paths:
+        if os.path.isdir(control_path):
+            for filename in os.listdir(control_path):
+                file_path = os.path.join(control_path, filename)
+                graphs = load_graphs(file_path)
+                training_set.append(graphs)
 
     return training_set
+
+
 
 def main() -> None:
 
     # Specify the directory you want to traverse
     # replace with your directory path
-    train_cancer_directory = "/scratch/project/tcr_ml/gnn_release/dataset_v2/cancer/processed"
-    train_control_directory = "/scratch/project/tcr_ml/gnn_release/dataset_v2/control_new/processed"
+    train_cancer_directories = [
+        "/scratch/project/tcr_ml/gnn_release/test_data_v2/ccdi/processed"
+    ]
+    train_control_directories = [
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/control/processed"
+    ]
 
-    train_set = load_train_data(train_cancer_directory, train_control_directory)
+    train_set = load_train_data(train_cancer_directories, train_control_directories)
 
-    model = GATv2(nfeat=train_set[0][0].num_node_features, nhid=375, nclass=2, dropout=0.17)
+
+    model = GATv2(
+        nfeat=train_set[0][0].num_node_features, nhid=375, nclass=2, dropout=0.17
+    )
     model.to(device)
 
     train_loader = DataLoader(
@@ -191,6 +220,7 @@ def main() -> None:
 
     # Train the model on the training samples
     train(model, train_loader, num_epochs=500)
+
 
 if __name__ == "__main__":
     main()

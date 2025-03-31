@@ -274,7 +274,7 @@ def test_trained_model(dataset_path, model_path) -> None:
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False)
     model_file = os.path.join(model_path, MODEL_NAME)
 
-    model = GATv2(nfeat=test_set[0][0].num_node_features, nhid=256, nclass=2, dropout=0.17)
+    model = GATv2(nfeat=test_set[0][0].num_node_features, nhid=375, nclass=2, dropout=0.17)
     model.to(device)
 
     test(model, model_file, test_loader, filenames)

@@ -8,7 +8,7 @@ import numpy as np
 base_directory = "/scratch/project/tcr_ml/gnn_release/model"
 
 # Directory where the files are stored
-directory = "/scratch/project/tcr_ml/gnn_release/legacy_model/scores/"
+directory = "/scratch/project/tcr_ml/gnn_release/model_2025_360/scores/"
 
 # Directory to save the plots
 save_directory = directory
@@ -79,6 +79,9 @@ for filename in os.listdir(directory):
         # Calculate the length of each CDR3 sequence
         data["CDR3_Length"] = data["CDR3_Sequence"].apply(len)
 
+        # Add a column for the source file
+        data["Source_File"] = filename  # Add the filename as a column
+
         # Drop empty or all-NA columns
         data = data.dropna(axis=1, how="all")
 
@@ -87,7 +90,6 @@ for filename in os.listdir(directory):
             cancer_data = pd.concat([cancer_data, data], ignore_index=True)
         elif "control" in filename:
             control_data = pd.concat([control_data, data], ignore_index=True)
-
 # Filter out CDR3 lengths with less than 5 sequences
 counts = cancer_data["CDR3_Length"].value_counts()
 cancer_data_filtered = cancer_data[
@@ -146,17 +148,30 @@ plt.close()
 # Plot 4: Create boxplot with highlighted outliers
 plt.figure(figsize=(24, 10))
 bp = plt.boxplot([data[metric] for metric in metrics], labels=metrics)
-plt.title("Boxplots of Cancer CDR3 Scores by Metric with Outliers")
+plt.title("Boxplots of Cancer CDR3 Scores")
 plt.ylabel("Score")
 plt.xticks(rotation=45)
 
-# Highlight outliers in red
-for i in range(len(metrics)):
-    outliers = bp['fliers'][i]
-    outliers.set_color('red')
-    
 plt.tight_layout()
-plt.savefig(f"{save_directory}/metric_boxplots_with_outliers.png")
+plt.savefig(f"{save_directory}/metric_boxplots.png")
+plt.close()
+
+
+# Plot 5: Histogram of Individual Sequence Scores
+plt.figure(figsize=(20, 10))
+sns.histplot(
+    combined_data["Cancer_Score"], 
+    bins=10, 
+    kde=True, 
+    color='purple', 
+    alpha=0.7
+)
+plt.title("Histogram of Individual Sequence Scores")
+plt.xlabel("Cancer Score")
+plt.ylabel("Frequency")
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig(f"{save_directory}/individual_sequence_scores_histogram.png")
 plt.close()
 
 # Perform outlier analysis for each metric
@@ -169,3 +184,23 @@ for metric in metrics:
     outlier_file = f"{save_directory}/outliers_{metric.lower().replace(' ', '_')}.csv"
     outliers.to_csv(outlier_file, index=False)
     print(f"\nOutliers saved to: {outlier_file}")
+
+# Plot: Histogram of Individual Sequence Scores by Samples
+plt.figure(figsize=(20, 10))
+sns.histplot(
+    data=combined_data,
+    x="Cancer_Score",
+    hue="Source_File",  # Use the Source_File column directly
+    bins=10,
+    kde=False,
+    palette="tab20",
+    alpha=0.7,
+    multiple="stack"  # Stacked histogram
+)
+plt.title("Histogram of Individual Sequence Scores by Samples")
+plt.xlabel("Cancer Score")
+plt.ylabel("Frequency")
+plt.legend(title="Source File",loc='best')
+plt.tight_layout()
+plt.savefig(f"{save_directory}/individual_sequence_scores_by_samples_histogram.png")
+plt.close()

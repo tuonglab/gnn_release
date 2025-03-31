@@ -13,4 +13,4 @@
 #SBATCH -o run.out
 
 source ../gnn_env/bin/activate
-python test.py --dataset-path /scratch/project/tcr_ml/gnn_release/test_data_v2/sarcoma_zero/processed --model-path /scratch/project/tcr_ml/gnn_release/legacy_model
+python test.py --dataset-path /scratch/project/tcr_ml/gnn_release/test_data_v2/phs002517/processed --model-path /scratch/project/tcr_ml/gnn_release/model_2025_360

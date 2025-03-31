@@ -44,7 +44,7 @@ def convert_to_csv(input_dir, output_dir):
 
 if __name__ == "__main__":
     # Replace these paths with your actual paths
-    input_directory = "/QRISdata/Q7250/ZERO/sarcoma/tcr_cdr3"
-    output_directory = "/scratch/project/tcr_ml/colabfold/sarcoma_zero"
+    input_directory = "/scratch/project/tcr_ml/colabfold/unrelapsed_txt"
+    output_directory = "/scratch/project/tcr_ml/colabfold/unrelapsed"
     
     convert_to_csv(input_directory, output_directory)

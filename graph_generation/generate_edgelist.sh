@@ -15,5 +15,5 @@ source /scratch/project/tcr_ml/gnn_env/bin/activate
 
 # Run the edge list generation script with actual paths
 python /scratch/project/tcr_ml/gnn_release/graph_generation/create_edgelist.py \
-    --tar-dir /scratch/project/tcr_ml/colabfold/results_2/prediction/sarcoma_zero \
-    --output-base-dir /scratch/project/tcr_ml/gnn_release/test_data_v2/sarcoma_zero/raw
+    --tar-dir /scratch/project/tcr_ml/colabfold/results_2/prediction/blood_tissue \
+    --output-base-dir /scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue/raw
