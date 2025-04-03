@@ -19,3 +19,4 @@ plot_scores.ipynb
 model_2025_360.tar.gz
 .gitignore
 model_2025_mixed.tar.gz
+model_2025*
