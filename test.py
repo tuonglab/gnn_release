@@ -22,28 +22,16 @@ np.random.seed(46)
 # Load model path to save here
 MODEL_NAME = "best_model.pt"
 
-import os
 from typing import List, Tuple, Any
 
+
 def load_test_data(data_path: str) -> Tuple[List[str], List[Any]]:
-    """
-    Load test data from the specified path.
-
-    Args:
-        data_path (str): The path to the directory containing both cancer and control data files.
-
-    Returns:
-        Tuple[List[str], List[Any]]: A tuple containing two lists. The first list contains the modified filenames,
-        and the second list contains the loaded test data graphs.
-    """
     test_set = []
     file_set = []
-    
+
     if os.path.isdir(data_path):
         for filename in os.listdir(data_path):
             file_path = os.path.join(data_path, filename)
-            
-            # Check if it's a file and skip directories
             if os.path.isfile(file_path):
                 graphs = load_graphs(file_path)
                 prefix = filename.split("_cdr3")[0]
@@ -54,51 +42,30 @@ def load_test_data(data_path: str) -> Tuple[List[str], List[Any]]:
     return file_set, test_set
 
 
-def repr_plot(
-    sample_representative_pred: list, sample_representative_label: list, output_dir: str
-) -> None:
-    """
-    Generate a boxplot comparing the predictions of control and cancer samples.
-
-    Args:
-        sample_representative_pred (list): List of predicted values for each sample.
-        sample_representative_label (list): List of labels for each sample (0 for control, 1 for cancer).
-        output_dir (str): Directory where the boxplot image will be saved.
-
-    Returns:
-        None
-    """
+def repr_plot(sample_representative_pred: list, sample_representative_label: list, output_dir: str) -> None:
     control_preds = [
-        pred
-        for label, pred in zip(sample_representative_label, sample_representative_pred)
-        if label == 0
+        pred for label, pred in zip(sample_representative_label, sample_representative_pred) if label == 0
     ]
     cancer_preds = [
-        pred
-        for label, pred in zip(sample_representative_label, sample_representative_pred)
-        if label == 1
+        pred for label, pred in zip(sample_representative_label, sample_representative_pred) if label == 1
     ]
 
     print(control_preds, cancer_preds)
 
-    # Create boxplots
     plt.figure(figsize=(12, 6))
     boxplot_elements = plt.boxplot([control_preds, cancer_preds], widths=0.4)
 
-    # Add individual data points on top of the boxplot
     for i, element in enumerate(boxplot_elements["medians"]):
         xdata = element.get_xdata()
         ydata = element.get_ydata()
         ymean = ydata.mean()
         xmean = xdata.mean()
 
-        # plot points
         if i == 0:
             plt.plot([xmean] * len(control_preds), control_preds, "r.", alpha=0.2)
         elif i == 1:
             plt.plot([xmean] * len(cancer_preds), cancer_preds, "r.", alpha=0.2)
 
-    # Set y-axis limits
     plt.ylim(0.3, 1)
     plt.xticks([1, 2], ["Control", "Cancer"])
     plt.title("Control vs Cancer")
@@ -106,86 +73,34 @@ def repr_plot(
     plt.savefig(os.path.join(output_dir, "boxplot.png"))
     plt.close()
 
+
 def test(
-    model: torch.nn.Module, model_file: str, loader: DataLoader, filenames: list[str]
+    model: torch.nn.Module,
+    model_file: str,
+    loader: DataLoader,
+    filenames: List[str],
+    scores_dir: str,
 ) -> float:
-    """
-    Test the model on the given samples and calculate the AUC.
-
-    Args:
-        model (torch.nn.Module): The trained model.
-        model_path (str): The path to the saved model.
-        loader (torch.utils.data.DataLoader): The data loader for loading the test data.
-        filenames (list): The list of filenames corresponding to the test data.
-
-    Returns:
-        float: The sample AUC (Area Under the Curve) score.
-    """
-
     def create_filename(label: int, original_filename: str, iteration: int, suffix: str) -> str:
-        """
-        Creates a new filename based on the given parameters.
-
-        Parameters:
-            label (int): The numeric label.
-            original_filename (str): The original filename.
-            iteration (int): The iteration number.
-            suffix (str): The suffix to be added to the new filename.
-
-        Returns:
-            str: The new filename.
-        """
-        # Map the numeric label to a string
         label_map = {0: "control", 1: "cancer"}
         label_str = label_map[label]
-
-        # Strip the suffix until "cdr3" and add the specified suffix
         prefix = original_filename.split("_cdr3")[0]
         new_filename = f"{prefix}_{iteration}_{label_str}_cdr3_{suffix}"
-
         return new_filename
 
     def save_scores_to_file(scores: list, original_filename: str, filename: str, directory: str) -> None:
-        """
-        Save scores to a file along with corresponding sequences, searching recursively for CSV files only.
-        
-        Args:
-            scores (list): List of scores.
-            original_filename (str): Name of the original file.
-            filename (str): Name of the file to be saved.
-            directory (str): Directory where the file will be saved.
-        
-        Returns:
-            None
-        
-        Raises:
-            FileNotFoundError: If the original file is not found in the base directory or its subdirectories.
-        """
-        # Create the output directory if it doesn't exist
         os.makedirs(directory, exist_ok=True)
-        
-        # Create the full path for the output file
         file_path = os.path.join(directory, filename)
-        
-        # Base directory for colabfold
-        # Define this as your base directory where you store your CSV files which you submit to Alphafold
-        # This is important for the function to find the CSV files and name the files and link the sequences to the scores
         base_dir = "/scratch/project/tcr_ml/colabfold"
-        
-        # Initialize sequences as None
+
         sequences = None
         found_file = None
-        
-        # Walk through all subdirectories, focusing only on CSV files
+
         for root, _, files in os.walk(base_dir):
-            # Filter for CSV files only
             csv_files = [f for f in files if f.endswith('.csv')]
-            
-            # Skip this directory if there are no CSV files
             if not csv_files:
                 continue
-                
-            # Check if our target file is among the CSV files
+
             if original_filename in csv_files:
                 try:
                     df = pd.read_csv(os.path.join(root, original_filename))
@@ -196,102 +111,80 @@ def test(
                     print(f"Error reading CSV file {os.path.join(root, original_filename)}: {str(e)}")
                     continue
 
-        # If sequences weren't found, raise an error
         if sequences is None:
             raise FileNotFoundError(
                 f"Error: The CSV file {original_filename} was not found in {base_dir} or any of its subdirectories."
             )
-        
-        # Print the location where the file was found (helpful for debugging)
-        print(f"Found and read CSV file from: {found_file}")
 
-        # Use the maximum length between sequences and scores
+        print(f"Found and read CSV file from: {found_file}")
         max_length = max(len(sequences), len(scores))
 
-        # Open the file and write the sequences and scores
         with open(file_path, "w") as file:
             for i in range(max_length):
                 sequence = sequences[i] if i < len(sequences) else "N/A"
                 score = scores[i] if i < len(scores) else "N/A"
                 file.write(f"{sequence},{score}\n")
 
-    # Load the model from the file
     state_dict = torch.load(model_file)
     model.load_state_dict(state_dict)
-    model.eval()  # put in eval mode
+    model.eval()
 
     sample_reprensatative_pred = []
     sample_reprensatative_label = []
 
-    for i, sample in enumerate(loader):  # iterate over samples
+    for i, sample in enumerate(loader):
         sample_scores = []
         sample_labels = []
         try:
-            for j, data in enumerate(sample):  # iterate over TCR sequences in each sample
-
-                # Check dimensions before model forward pass
+            for j, data in enumerate(sample):
                 if data.x.dim() != 2:
                     raise ValueError(f"Input features must be 2-dimensional. Current shape: {data.x.shape}")
-                
                 out = model(data.x, data.edge_index, data.batch)
                 probabilities = torch.sigmoid(out)
                 sample_scores.extend(probabilities[:, 1].tolist())
                 sample_labels.extend(data.y.tolist())
-                
         except Exception as e:
             print(f"\nError processing file: {filenames[i]}")
             print(f"Error details: {str(e)}")
             print(f"Error type: {type(e).__name__}")
             continue
 
-        # calculate the mean feature importance score for the sample
         mean_sample_scores = np.mean(sample_scores)
         mean_sample_labels = np.mean(sample_labels)
 
-        scores_filename = create_filename(
-            int(mean_sample_labels), filenames[i], i, suffix="scores.txt"
-        )
-        # Save the scores to a file in the model path directory
-        save_scores_to_file(sample_scores, filenames[i], scores_filename, MODEL_PATH + "/scores")
+        scores_filename = create_filename(int(mean_sample_labels), filenames[i], i, suffix="scores.txt")
+        save_scores_to_file(sample_scores, filenames[i], scores_filename, scores_dir)
 
         sample_reprensatative_pred.append(float(mean_sample_scores))
         sample_reprensatative_label.append(float(mean_sample_labels))
 
-    # sample_auc = roc_auc_score(sample_reprensatative_label, sample_reprensatative_pred)
-    # repr_plot(sample_reprensatative_pred, sample_reprensatative_label, MODEL_PATH)
     return "Done"
 
-def test_trained_model(dataset_path, model_path) -> None:
-    """
-    Function to test a trained model using test data from cancer and control paths
 
-    Args:
-        cancer_path (str): Path to the cancer test dataset.
-        control_path (str): Path to the control test dataset.
-        model_path (str): Path where the model is saved.
-    """
+def test_trained_model(dataset_path, model_path, dataset_name) -> None:
     filenames, test_set = load_test_data(dataset_path)
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False)
     model_file = os.path.join(model_path, MODEL_NAME)
+    scores_dir = os.path.join(model_path, f"{dataset_name}_scores")
 
     model = GATv2(nfeat=test_set[0][0].num_node_features, nhid=375, nclass=2, dropout=0.17)
     model.to(device)
 
-    test(model, model_file, test_loader, filenames)
+    test(model, model_file, test_loader, filenames, scores_dir)
+
 
 if __name__ == "__main__":
-    # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Test a trained model with datasets.")
     parser.add_argument('--dataset-path', type=str, required=True, help="Path to the test dataset.")
     parser.add_argument('--model-path', type=str, required=True, help="Path to the saved model file.")
+    parser.add_argument('--dataset-name', type=str, required=True, help="Name of the dataset (used for naming output folders).")
 
     args = parser.parse_args()
     MODEL_PATH = args.model_path
+    DATASET_NAME = args.dataset_name
 
-    # Call the test function with the arguments
-    test_trained_model(args.dataset_path,args.model_path)
+    test_trained_model(args.dataset_path, args.model_path, args.dataset_name)
 
-    # After the function is done
-    if os.path.exists(args.model_path + "/train.out"):
-        os.remove(args.model_path + "/train.out")
-    # shutil.move("train.out", args.model_path)
+    # Optionally remove train.out if it exists
+    if os.path.exists(os.path.join(args.model_path, "train.out")):
+        os.remove(os.path.join(args.model_path, "train.out"))

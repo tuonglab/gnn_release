@@ -101,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--directory",
         type=str,
-        default="/scratch/project/tcr_ml/gnn_release/model_2025_ccdi_only/scores",
+        default="/scratch/project/tcr_ml/gnn_release/model_2025_360_only/scores",
         help="Directory containing the score .txt files. Defaults to a preset path.",
     )
     args = parser.parse_args()
