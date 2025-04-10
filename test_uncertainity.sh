@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --mem=24G
 #SBATCH --job-name=test_uncertainty
-#SBATCH --time=72:00:00
+#SBATCH --time=2:00:00
 #SBATCH --partition=gpu_cuda
 #SBATCH --gres=gpu:1
 #SBATCH --account=a_kelvin_tuong
@@ -15,4 +15,5 @@
 source ../gnn_env/bin/activate
 module load cuda/12.1
 # python train_uncertainty.py
-python evaluate_uncertainty.py
+# python evaluate_uncertainty.py
+python evaluate_uncertainty_isacs_only.py

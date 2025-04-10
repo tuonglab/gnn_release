@@ -41,39 +41,6 @@ def load_test_data(data_path: str) -> Tuple[List[str], List[Any]]:
 
     return file_set, test_set
 
-
-def repr_plot(sample_representative_pred: list, sample_representative_label: list, output_dir: str) -> None:
-    control_preds = [
-        pred for label, pred in zip(sample_representative_label, sample_representative_pred) if label == 0
-    ]
-    cancer_preds = [
-        pred for label, pred in zip(sample_representative_label, sample_representative_pred) if label == 1
-    ]
-
-    print(control_preds, cancer_preds)
-
-    plt.figure(figsize=(12, 6))
-    boxplot_elements = plt.boxplot([control_preds, cancer_preds], widths=0.4)
-
-    for i, element in enumerate(boxplot_elements["medians"]):
-        xdata = element.get_xdata()
-        ydata = element.get_ydata()
-        ymean = ydata.mean()
-        xmean = xdata.mean()
-
-        if i == 0:
-            plt.plot([xmean] * len(control_preds), control_preds, "r.", alpha=0.2)
-        elif i == 1:
-            plt.plot([xmean] * len(cancer_preds), cancer_preds, "r.", alpha=0.2)
-
-    plt.ylim(0.3, 1)
-    plt.xticks([1, 2], ["Control", "Cancer"])
-    plt.title("Control vs Cancer")
-    plt.show()
-    plt.savefig(os.path.join(output_dir, "boxplot.png"))
-    plt.close()
-
-
 def test(
     model: torch.nn.Module,
     model_file: str,

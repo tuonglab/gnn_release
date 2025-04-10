@@ -1,27 +1,27 @@
-# File: evaluate_uncertainty.py
-
 import os
 import numpy as np
 import pandas as pd
 import torch
 from torch.nn.functional import softmax
 from scipy.stats import zscore
-from train_uncertainity import GATv2Heteroscedastic, device, MODEL_FILE
+from train_uncertainity import GATv2Heteroscedastic, device
 from graph_generation.graph import load_graphs
 
 
+
+MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_only/best_model.pt"
 @torch.no_grad()
 def mc_dropout_predict(model, data, T=20):
     model.train()  # force dropout on
-    probs_list, log_vars_list = [], []
+    probs_list, log_vars_list = [],[]
 
     for _ in range(T):
         logits, log_var = model(data.x, data.edge_index, data.batch)
         probs = softmax(logits, dim=1)
-        probs_list.append(probs.cpu())
-        log_vars_list.append(log_var.cpu())
+        probs_list.append(probs)
+        log_vars_list.append(log_var)
 
-    probs_stack = torch.stack(probs_list)  # [T, B, 2]
+    probs_stack = torch.stack(probs_list)  # [T, B, C]
     log_vars_stack = torch.stack(log_vars_list)  # [T, B, 1]
 
     mean_probs = probs_stack.mean(dim=0)
@@ -34,17 +34,36 @@ def mc_dropout_predict(model, data, T=20):
     return mean_probs, mean_log_vars, entropy, mi
 
 
-def evaluate_mc_dropout(model, dataset, T=20):
+def evaluate_mc_dropout(model, dataset, T=20, return_individual=False):
     model.eval()
     results = []
+    per_graph_records = []
+
     for sample_idx, sample_graphs in enumerate(dataset):
         entropy_list, mi_list, var_list = [], [], []
-        for g in sample_graphs:
+        for graph_idx, g in enumerate(sample_graphs):
             g = g.to(device)
-            _, log_var, entropy, mi = mc_dropout_predict(model, g, T=T)
-            entropy_list.extend(entropy.cpu().tolist())
-            mi_list.extend(mi.cpu().tolist())
-            var_list.extend(torch.exp(log_var).cpu().tolist())
+            probs, log_var, entropy, mi = mc_dropout_predict(model, g, T=T)
+            var = torch.exp(log_var)
+            probs = probs
+
+            entropy_list.extend(entropy.tolist())
+            mi_list.extend(mi.tolist())
+            var_list.extend(var.tolist())
+
+            if return_individual:
+                for i in range(len(entropy)):
+                    per_graph_records.append({
+                        "sample_id": sample_idx,
+                        "graph_idx": graph_idx,
+                        "subgraph_idx": i,
+                        "entropy": entropy[i].item(),
+                        "mutual_info": mi[i].item(),
+                        "aleatoric_var": var[i].item(),
+                        "pred_class": torch.argmax(probs[i]).item(),
+                        "pred_prob_0": probs[i][0].item(),
+                        "pred_prob_1": probs[i][1].item()
+                    })
 
         results.append({
             "sample_id": sample_idx,
@@ -55,13 +74,14 @@ def evaluate_mc_dropout(model, dataset, T=20):
         })
 
     df = pd.DataFrame(results)
-
-    # Z-score calculation
     df["z_entropy"] = zscore(df["mean_entropy"])
     df["z_mutual_info"] = zscore(df["mean_mutual_info"])
     df["z_aleatoric_var"] = zscore(df["mean_aleatoric_var"])
 
-    return df
+    if return_individual:
+        return df, pd.DataFrame(per_graph_records)
+    else:
+        return df
 
 
 def print_uncertainty_summary(df, print_mode="all", show_all_rows=False):
@@ -93,7 +113,7 @@ def load_eval_data(path):
 
 
 def main():
-    test_dir ="/scratch/project/tcr_ml/gnn_release/test_data_v2/val_control/processed"
+    test_dir = "/scratch/project/tcr_ml/gnn_release/test_data_v2/phs002517/processed"
     dataset_name = test_dir.split("test_data_v2/")[1].split("/")[0]
 
     test_set = load_eval_data(test_dir)
@@ -104,28 +124,34 @@ def main():
         nclass=2
     ).to(device)
 
-    MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi/best_model.pt"
     model.load_state_dict(torch.load(MODEL_FILE))
     model.eval()
 
-    results_df = evaluate_mc_dropout(model, test_set, T=30)
+    results_df, per_graph_df = evaluate_mc_dropout(model, test_set, T=30, return_individual=True)
 
     # Summary statistics
     print_uncertainty_summary(results_df, print_mode="all")
     print_uncertainty_summary(results_df, print_mode="all", show_all_rows=True)
 
-
-
     # Define CSV output directory inside model directory
     model_dir = os.path.dirname(MODEL_FILE)
     csv_dir = os.path.join(model_dir, "uncertainty_csv")
+    graph_csv_dir = os.path.join(model_dir, "graph_level_uncertainty")
+    os.makedirs(graph_csv_dir, exist_ok=True)
     os.makedirs(csv_dir, exist_ok=True)
 
-    # Save CSV file with z-scores included
+    # Save per-sample summary
     output_filename = f"uncertainty_results_{dataset_name}.csv"
     output_path = os.path.join(csv_dir, output_filename)
     results_df.to_csv(output_path, index=False)
-    print(f"\n✅ Results exported to: {output_path}")
+
+    # Save per-graph metrics
+    graph_output_filename = f"uncertainty_graph_level_{dataset_name}.csv"
+    graph_output_path = os.path.join(graph_csv_dir, graph_output_filename)
+    per_graph_df.to_csv(graph_output_path, index=False)
+
+    print(f"\n✅ Per-sample summary exported to: {output_path}")
+    print(f"✅ Per-graph scores exported to: {graph_output_path}")
 
 
 if __name__ == "__main__":

@@ -61,8 +61,8 @@ def plot_roc_curve(fpr, tpr, roc_auc, output_dir, dataset):
     return output_path
 
 # File paths
-cancer_file = '/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi/sarcoma_zero_scores/metric_scores.csv'
-control_file = '/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi/control_scores/metric_scores.csv'
+cancer_file = '/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi/scTRB_scores/metric_scores.csv'
+control_file = '/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi/train_control_scores/metric_scores.csv'
 
 # Extract dataset name and strip "_scores" suffix
 dataset_folder = os.path.basename(os.path.dirname(cancer_file))
