@@ -6,7 +6,7 @@
 #SBATCH --job-name=bootstrap
 #SBATCH --time=4:00:00
 #SBATCH --partition=gpu_cuda
-#SBATCH --gres=gpu:h100:1
+#SBATCH --gres=gpu:1
 #SBATCH --account=a_kelvin_tuong
 #SBATCH -e bootstrap.error
 #SBATCH -o bootstrap_isacs_only_2.out

@@ -4,6 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch_geometric.loader import DataLoader
 from torch_geometric.nn import GATv2Conv, global_mean_pool
+from graph_generation.graph import load_graphs
 
 # --------------------------------------------------
 # Basic Setup
@@ -41,14 +42,7 @@ class GATv2(torch.nn.Module):
 # --------------------------------------------------
 # Data Loading Function
 # --------------------------------------------------
-def load_graphs(file_path):
-    """
-    Stub for 'load_graphs' function.
-    Replace with your real implementation that
-    loads and returns a list of PyG 'Data' objects.
-    """
-    # Placeholder: must return List[Data]
-    raise NotImplementedError("Replace this with your real 'load_graphs' definition.")
+
 
 def load_train_data(cancer_paths: list, control_paths: list):
     training_set = []

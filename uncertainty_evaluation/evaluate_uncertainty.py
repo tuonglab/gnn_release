@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 from torch.nn.functional import softmax
 from scipy.stats import zscore
-from train_uncertainity import GATv2Heteroscedastic, device
+from uncertainty_evaluation.train_uncertainity import GATv2Heteroscedastic, device
 from graph_generation.graph import load_graphs
 
 
