@@ -6,10 +6,12 @@ from torch.nn.functional import softmax
 from scipy.stats import zscore
 from uncertainty_evaluation.train_uncertainity import GATv2Heteroscedastic, device
 from graph_generation.graph import load_graphs
+from pathlib import Path
 
 
 
-MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_only/best_model.pt"
+
+MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi/best_model.pt"
 @torch.no_grad()
 def mc_dropout_predict(model, data, T=20):
     model.train()  # force dropout on
@@ -113,8 +115,15 @@ def load_eval_data(path):
 
 
 def main():
-    test_dir = "/scratch/project/tcr_ml/gnn_release/test_data_v2/phs002517/processed"
-    dataset_name = test_dir.split("test_data_v2/")[1].split("/")[0]
+
+
+    test_dir = "/scratch/project/tcr_ml/gnn_release/dataset_v2/d360/processed"
+    prefix = "/scratch/project/tcr_ml/gnn_release"
+
+    rel_parts = Path(test_dir).relative_to(prefix).parts
+    dataset_name = rel_parts[1]  # index 1 is 'd360'
+
+
 
     test_set = load_eval_data(test_dir)
 

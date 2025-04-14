@@ -12,8 +12,7 @@
 #SBATCH -o test_uncertainty.out
 #SBATCH --qos=gpu
 
-source ../gnn_env/bin/activate
+source ../../gnn_env/bin/activate
 module load cuda/12.1
-# python train_uncertainty.py
-# python evaluate_uncertainty.py
-python evaluate_uncertainty_isacs_only.py
+export PYTHONPATH='/scratch/project/tcr_ml/gnn_release'
+python evaluate_uncertainty.py
