@@ -65,7 +65,7 @@ def process_tar_file(tar_file, output_base_dir) -> None:
             pdb_file = os.path.join(tar_directory, file)
             check_all_distances(pdb_file, output_dir)
         else:
-            print(file)
+            print(f"Error generating edgelist for file: {pdb_file}")
 
 
     with ThreadPoolExecutor() as executor:
