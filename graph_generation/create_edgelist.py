@@ -40,8 +40,19 @@ def process_tar_file(tar_file, output_base_dir) -> None:
     Returns:
         None
     """
+
+    import os
+
     tar_directory = extract_tar_file(tar_file)
-    extracted_files = os.listdir(tar_directory)
+
+    # Recursively collect all files under tar_directory
+    extracted_files = []
+    for root, dirs, files in os.walk(tar_directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            extracted_files.append(file_path)
+
+    # Continue with your existing code
     output_dir = os.path.join(
         output_base_dir,
         os.path.basename(tar_directory),
@@ -53,9 +64,10 @@ def process_tar_file(tar_file, output_base_dir) -> None:
         if ("rank_001" in file and file.endswith(".pdb")) or  ("model_0" in file and file.endswith(".pdb")):
             pdb_file = os.path.join(tar_directory, file)
             check_all_distances(pdb_file, output_dir)
+        else:
+            print(file)
 
 
-    print("Processing extracted files")
     with ThreadPoolExecutor() as executor:
         executor.map(process_pdb_file, extracted_files)
     print("Finish")
