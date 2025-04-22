@@ -1,11 +1,12 @@
 from graph import load_graphs, draw_graph
 
 # Path to the .pt file
-file_path = "/scratch/project/tcr_ml/gnn_release/test_data_v2/seekgene_boltz/processed/boltz_results_S1_edges.tar.pt"
+file_path = "/scratch/project/tcr_ml/gnn_release/test_data_v2/seekgene/processed/S1_cdr3_results_edges.tar.pt"
 
+# file_path = "/scratch/project/tcr_ml/gnn_release/test_data_v2/seekgene_boltz/processed/boltz_results_S1_edges.tar.pt"
 # Target sequences you're interested in
 target_sequences = {
-    "CASSPTLNTEAFF"
+    "CASSSLLPQGWGLDGYTF"
 }
 
 # Load graphs once

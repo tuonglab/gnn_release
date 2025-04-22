@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 
-MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi/best_model.pt"
+MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_only/best_model.pt"
 @torch.no_grad()
 def mc_dropout_predict(model, data, T=20):
     model.train()  # force dropout on
@@ -117,7 +117,7 @@ def load_eval_data(path):
 def main():
 
 
-    test_dir = "/scratch/project/tcr_ml/gnn_release/dataset_v2/d360/processed"
+    test_dir = "/scratch/project/tcr_ml/gnn_release/test_data_v2/non_360_timepoints/processed"
     prefix = "/scratch/project/tcr_ml/gnn_release"
 
     rel_parts = Path(test_dir).relative_to(prefix).parts
