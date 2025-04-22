@@ -13,7 +13,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.manual_seed(46)
 np.random.seed(46)
 
-MODEL_PATH = "model_2025_isacs_only"
+MODEL_PATH = "model_2025_isacs_ccdi"
 MODEL_NAME = "best_model.pt"
 MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 os.makedirs(MODEL_PATH, exist_ok=True)
@@ -63,10 +63,7 @@ def load_train_data(cancer_paths: list, control_paths: list):
     # 'training_set' is a list of lists; flatten if needed:
     # Possibly each 'load_graphs' returns a list of Data objects. 
     # So if you want a single list of Data objects, do:
-    flat_dataset = []
-    for item in training_set:
-        flat_dataset.extend(item)
-    return flat_dataset
+    return training_set
 
 # --------------------------------------------------
 # Brier Score Helper
@@ -82,7 +79,7 @@ def train_single_run(dataset, num_epochs=100, patience=15, lr=0.0005, weight_dec
     Trains one GATv2 model on the entire 'dataset'.
     Returns (model, best_loss, None).
     """
-    nfeat = dataset[0].num_node_features  # dataset is a list of PyG 'Data'
+    nfeat = dataset[0][0].num_node_features  # dataset is a list of PyG 'Data'
     model = GATv2(nfeat=nfeat, nhid=hidden_dim, nclass=2, dropout=dropout).to(device)
 
     data_loader = DataLoader(dataset, batch_size=256, shuffle=True)
@@ -98,21 +95,22 @@ def train_single_run(dataset, num_epochs=100, patience=15, lr=0.0005, weight_dec
         total_loss = 0.0
         total_samples = 0
 
-        for data in data_loader:
-            optimizer.zero_grad()
+        for sample in data_loader:
+            for data in sample:
+                optimizer.zero_grad()
 
-            # data here is a single batch of multiple graphs
-            out = model(data.x.to(device), data.edge_index.to(device), data.batch.to(device))
-            # out shape: (batch_size, 2)
-            out_pos = out[:, 1]
-            
-            loss = criterion(out_pos, data.y.float().to(device))
-            loss.backward()
-            optimizer.step()
+                # data here is a single batch of multiple graphs
+                out = model(data.x.to(device), data.edge_index.to(device), data.batch.to(device))
+                # out shape: (batch_size, 2)
+                out_pos = out[:, 1]
+                
+                loss = criterion(out_pos, data.y.float().to(device))
+                loss.backward()
+                optimizer.step()
 
-            batch_size = data.y.size(0)
-            total_loss += loss.item() * batch_size
-            total_samples += batch_size
+                batch_size = data.y.size(0)
+                total_loss += loss.item() * batch_size
+                total_samples += batch_size
 
         avg_loss = total_loss / total_samples
 
@@ -150,23 +148,24 @@ def evaluate_model(model, dataset):
     total_samples = 0
 
     with torch.no_grad():
-        for data in data_loader:
-            out = model(data.x.to(device), data.edge_index.to(device), data.batch.to(device))
-            out_pos = out[:, 1]
+        for sample in data_loader:
+            for data in sample:
+                out = model(data.x.to(device), data.edge_index.to(device), data.batch.to(device))
+                out_pos = out[:, 1]
 
-            probs = torch.sigmoid(out_pos)
-            labels = data.y.float().to(device)
+                probs = torch.sigmoid(out_pos)
+                labels = data.y.float().to(device)
 
-            loss = criterion(out_pos, labels)
-            brier = brier_score(probs, labels)
+                loss = criterion(out_pos, labels)
+                brier = brier_score(probs, labels)
 
-            batch_size = labels.size(0)
-            total_loss += loss.item() * batch_size
-            total_brier += brier * batch_size
-            total_samples += batch_size
+                batch_size = labels.size(0)
+                total_loss += loss.item() * batch_size
+                total_brier += brier * batch_size
+                total_samples += batch_size
 
-    avg_loss = total_loss / total_samples
-    avg_brier = total_brier / total_samples
+        avg_loss = total_loss / total_samples
+        avg_brier = total_brier / total_samples
     return avg_loss, avg_brier
 
 # --------------------------------------------------
@@ -222,9 +221,10 @@ def compute_noinfo_baselines(dataset):
     by using the fraction of positives in the entire dataset.
     """
     all_labels = []
-    for data in dataset:
+    for sample in dataset:
+        for data in sample:
         # data.y is a tensor of 0/1
-        all_labels.extend(data.y.tolist())
+            all_labels.extend(data.y.tolist())
 
     all_labels = np.array(all_labels)
     p = np.mean(all_labels)
@@ -323,7 +323,7 @@ def main():
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue/processed",
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/scTRB/processed",
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/tumor_tissue/processed",
-        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed",
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed",
     ]
     train_control_directories = [
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/control/processed"
@@ -333,7 +333,7 @@ def main():
     train_set = load_train_data(train_cancer_directories, train_control_directories)
     print(f"Loaded dataset with {len(train_set)} total graphs.")
 
-    B = 20
+    B = 30
     num_epochs = 200
     patience = 15
 
