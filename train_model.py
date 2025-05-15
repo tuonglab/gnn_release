@@ -15,7 +15,7 @@ torch.manual_seed(46)
 np.random.seed(46)
 
 # Load model path to save here
-MODEL_PATH = "model_2025_360_only"
+MODEL_PATH = "model_2025_isacs_ccdi"
 MODEL_NAME = "best_model.pt"
 MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 
@@ -135,19 +135,20 @@ def train(
         accuracy = total_correct / total_samples  # Calculate accuracy
         print(f"Epoch: {epoch+1}, Loss: {avg_loss}, Accuracy: {accuracy}")
 
+        min_delta_loss = 0.04   # Minimum improvement required in loss
+        min_delta_acc = 0.02   # Minimum improvement required in accuracy
+
         # Check for early stopping
-        if avg_loss < best_loss:
+        if avg_loss < best_loss - min_delta_loss:
             best_loss = avg_loss
             patience_counter = 0
-            torch.save(
-                model.state_dict(),
-                MODEL_FILE,
-            )
-        elif accuracy > best_accuracy:
+            torch.save(model.state_dict(), MODEL_FILE)
+        elif accuracy > best_accuracy + min_delta_acc:
             best_accuracy = accuracy
             patience_counter = 0
         else:
             patience_counter += 1
+
 
         if patience_counter >= patience:
             print(
@@ -198,11 +199,11 @@ def main() -> None:
     # Specify the directory you want to traverse
     # replace with your directory path
     train_cancer_directories = [
-        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue/processed",
-        # '/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed',
-        "/scratch/project/tcr_ml/gnn_release/dataset_v2/d360/processed",
-        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/scTRB/processed",
-        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/tumor_tissue/processed"
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue/processed",
+        '/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed',
+        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/d360/processed",
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/scTRB/processed",
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/tumor_tissue/processed"
     ]
     train_control_directories = [
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/control/processed"
