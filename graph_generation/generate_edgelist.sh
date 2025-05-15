@@ -10,10 +10,23 @@
 #SBATCH -e edge_gen.error
 #SBATCH -o edge_gen.out
 
-# Activate the virtual environment
-source /scratch/project/tcr_ml/gnn_env/bin/activate
+# Define shared dataset ID
+DATASET_ID="20241106_WGS_20241106_sc_PICA0033-PICA0069_Pool_6"
 
-# Run the edge list generation script with actual paths
-python /scratch/project/tcr_ml/gnn_release/graph_generation/create_edgelist.py \
-    --tar-dir /scratch/project/tcr_ml/colabfold/results_2/prediction/20240918_WGS_20240924_sc_PICA0008-PICA0032_Pool_8 \
-    --output-base-dir /scratch/project/tcr_ml/gnn_release/test_data_v2/20240918_WGS_20240924_sc_PICA0008-PICA0032_Pool_8/raw
+# Define base paths
+ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"
+SCRIPT_PATH="/scratch/project/tcr_ml/gnn_release/graph_generation/create_edgelist.py"
+INPUT_BASE="/scratch/project/tcr_ml/colabfold/results_2/prediction"
+OUTPUT_BASE="/scratch/project/tcr_ml/gnn_release/test_data_v2"
+
+# Construct input/output directories using the dataset ID
+INPUT_DIR="${INPUT_BASE}/${DATASET_ID}"
+OUTPUT_DIR="${OUTPUT_BASE}/${DATASET_ID}/raw"
+
+# Activate the virtual environment
+source "$ENV_PATH"
+
+# Run the edge list generation script
+python "$SCRIPT_PATH" \
+    --tar-dir "$INPUT_DIR" \
+    --output-base-dir "$OUTPUT_DIR"
