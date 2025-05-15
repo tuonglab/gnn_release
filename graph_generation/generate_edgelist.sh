@@ -15,5 +15,5 @@ source /scratch/project/tcr_ml/gnn_env/bin/activate
 
 # Run the edge list generation script with actual paths
 python /scratch/project/tcr_ml/gnn_release/graph_generation/create_edgelist.py \
-    --tar-dir /scratch/project/tcr_ml/boltz1/aml_zero/aml_zero_predictions \
-    --output-base-dir /scratch/project/tcr_ml/gnn_release/test_data_v2/aml_zero_boltz/raw
+    --tar-dir /scratch/project/tcr_ml/colabfold/results_2/prediction/20240918_WGS_20240924_sc_PICA0008-PICA0032_Pool_8 \
+    --output-base-dir /scratch/project/tcr_ml/gnn_release/test_data_v2/20240918_WGS_20240924_sc_PICA0008-PICA0032_Pool_8/raw
