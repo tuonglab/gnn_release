@@ -2,10 +2,10 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=64G
+#SBATCH --mem=16G
 #SBATCH --gres=gpu:1
 #SBATCH --job-name=predict_gnn
-#SBATCH --time=0:25:00
+#SBATCH --time=0:15:00
 #SBATCH --partition=gpu_cuda
 #SBATCH --qos=gpu
 #SBATCH --account=a_kelvin_tuong
@@ -16,8 +16,8 @@
 source ../gnn_env/bin/activate
 
 # Define paths and names
-MODEL_PATH="/scratch/project/tcr_ml/gnn_release/model_2025_ccdi_only"
-DATASET_NAME="20240918_WGS_20240924_sc_PICA0008-PICA0032_Pool_8"
+MODEL_PATH="/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi"
+DATASET_NAME="20240918_WGS_20240924_sc_PICA0008-PICA0032_Pool_1"
 DATASET_PATH="/scratch/project/tcr_ml/gnn_release/test_data_v2/${DATASET_NAME}/processed"
 SCORES_DIR="${MODEL_PATH}/${DATASET_NAME}_scores"
 
