@@ -11,7 +11,7 @@
 #SBATCH -o pytorch.out
 
 # Define shared dataset ID
-DATASET_ID="20240918_WGS_20240924_sc_PICA0008-PICA0032_Pool_1"
+DATASET_ID="20241106_WGS_20241106_sc_PICA0033-PICA0069_Pool_6"
 
 # Define base paths
 ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"
