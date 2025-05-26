@@ -11,7 +11,7 @@
 #SBATCH -o edge_gen.out
 
 # Define shared dataset ID
-DATASET_ID="20250114_WGS_20241218_sc_PICA0071-PICA0097_Pool_7"
+DATASET_ID="20250114_WGS_20241218_sc_PICA0071-PICA0097_Pool_8"
 
 # Define base paths
 ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"
