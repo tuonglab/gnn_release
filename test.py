@@ -24,7 +24,6 @@ MODEL_NAME = "best_model.pt"
 
 from typing import List, Tuple, Any
 
-
 def load_test_data(data_path: str) -> Tuple[List[str], List[Any]]:
     test_set = []
     file_set = []
@@ -92,8 +91,10 @@ def test(
                 score = scores[i] if i < len(scores) else "N/A"
                 file.write(f"{sequence},{score}\n")
 
-    state_dict = torch.load(model_file)
+    # Load model state and move to device
+    state_dict = torch.load(model_file, map_location=device)
     model.load_state_dict(state_dict)
+    model.to(device)
     model.eval()
 
     sample_reprensatative_pred = []
@@ -104,6 +105,7 @@ def test(
         sample_labels = []
         try:
             for j, data in enumerate(sample):
+                data = data.to(device)
                 if data.x.dim() != 2:
                     raise ValueError(f"Input features must be 2-dimensional. Current shape: {data.x.shape}")
                 out = model(data.x, data.edge_index, data.batch)
@@ -127,7 +129,6 @@ def test(
 
     return "Done"
 
-
 def test_trained_model(dataset_path, model_path, dataset_name) -> None:
     filenames, test_set = load_test_data(dataset_path)
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False)
@@ -139,7 +140,6 @@ def test_trained_model(dataset_path, model_path, dataset_name) -> None:
 
     test(model, model_file, test_loader, filenames, scores_dir)
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test a trained model with datasets.")
     parser.add_argument('--dataset-path', type=str, required=True, help="Path to the test dataset.")
@@ -147,8 +147,6 @@ if __name__ == "__main__":
     parser.add_argument('--dataset-name', type=str, required=True, help="Name of the dataset (used for naming output folders).")
 
     args = parser.parse_args()
-    MODEL_PATH = args.model_path
-    DATASET_NAME = args.dataset_name
 
     test_trained_model(args.dataset_path, args.model_path, args.dataset_name)
 
