@@ -3,14 +3,12 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
-#SBATCH --gres=gpu:1
 #SBATCH --job-name=predict_gnn
-#SBATCH --time=0:10:00
-#SBATCH --partition=gpu_cuda
-#SBATCH --qos=gpu
+#SBATCH --time=0:20:00
+#SBATCH --partition=general
 #SBATCH --account=a_kelvin_tuong
-#SBATCH -e run.error
-#SBATCH -o run.out
+#SBATCH -e test_cpu.error
+#SBATCH -o tets_cpu.out
 
 # Activate environment
 source ../gnn_env/bin/activate
