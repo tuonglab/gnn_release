@@ -16,8 +16,8 @@
 source ../gnn_env/bin/activate
 
 # Define paths and names
-MODEL_PATH="/scratch/project/tcr_ml/gnn_release/model_2025_isacs_only"
-DATASET_NAME="20250114_WGS_20241218_sc_PICA0071-PICA0097_Pool_8"
+MODEL_PATH="/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi"
+DATASET_NAME="20241106_WGS_20241106_sc_PICA0033-PICA0069_Pool_3"
 DATASET_PATH="/scratch/project/tcr_ml/gnn_release/test_data_v2/${DATASET_NAME}/processed"
 SCORES_DIR="${MODEL_PATH}/${DATASET_NAME}_scores"
 
