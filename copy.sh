@@ -1,0 +1,1 @@
+cp /scratch/project/tcr_ml/gnn_release/test_data_v2/20240918_WGS_20240924_sc_PICA0008-PICA0032_Pool_6/processed/* /scratch/project/tcr_ml/gnn_release/dataset_v2/control+pica/processed

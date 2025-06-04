@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Root directory where subdirectories are located
-root_dir = "/scratch/project/tcr_ml/gnn_release/model_2025_ccdi_only"
+root_dir = "/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi_pica"
 
 # Initialize a list to collect dataframes
 all_dfs = []
