@@ -83,9 +83,11 @@ def plot_roc_curve(fpr, tpr, roc_auc, output_dir, dataset):
 control_file = '/scratch/project/tcr_ml/gnn_release/model_2025_sc/pica_filtered_scores/metric_scores.csv'
 cancer_file = '/scratch/project/tcr_ml/gnn_release/model_2025_sc/aml_zero_scores/metric_scores.csv'
 
-# Extract dataset name and strip "_scores" suffix
-dataset_folder = os.path.basename(os.path.dirname(cancer_file))
-dataset = dataset_folder.replace("_scores", "")
+# Extract cancer and control dataset names and strip "_scores" suffix
+cancer_folder = os.path.basename(os.path.dirname(cancer_file)).replace("_scores", "")
+control_folder = os.path.basename(os.path.dirname(control_file)).replace("_scores", "")
+dataset = f"{cancer_folder}_vs_{control_folder}"
+
 
 try:
     scores, labels = load_and_prepare_data(cancer_file, control_file)
