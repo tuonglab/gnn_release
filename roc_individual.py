@@ -30,6 +30,25 @@ def load_and_prepare_data(cancer_file, control_file):
         print(f"Error loading data: {str(e)}")
         raise
 
+def plot_boxplot(cancer_scores, control_scores, output_dir, dataset):
+    """
+    Plot boxplot comparing cancer and control scores.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, f'boxplot_{dataset}.png')
+    
+    data_to_plot = [control_scores, cancer_scores]
+    labels = ['Control', 'Cancer']
+    
+    plt.figure()
+    plt.boxplot(data_to_plot, labels=labels, notch=True, patch_artist=True)
+    plt.ylabel('Mean Score')
+    plt.title('Mean Score Comparison: Cancer vs. Control')
+    
+    plt.savefig(output_path)
+    plt.close()
+    return output_path
+
 def calculate_roc(scores, labels):
     """
     Calculate ROC curve and AUC score.
@@ -61,8 +80,8 @@ def plot_roc_curve(fpr, tpr, roc_auc, output_dir, dataset):
     return output_path
 
 # File paths
-control_file = '/scratch/project/tcr_ml/gnn_release/model_2025_ccdi_only/pica_filtered_scores/metric_scores.csv'
-cancer_file = '/scratch/project/tcr_ml/gnn_release/model_2025_ccdi_only/scTRB_scores/metric_scores.csv'
+control_file = '/scratch/project/tcr_ml/gnn_release/model_2025_sc/pica_filtered_scores/metric_scores.csv'
+cancer_file = '/scratch/project/tcr_ml/gnn_release/model_2025_sc/aml_zero_scores/metric_scores.csv'
 
 # Extract dataset name and strip "_scores" suffix
 dataset_folder = os.path.basename(os.path.dirname(cancer_file))
@@ -71,6 +90,13 @@ dataset = dataset_folder.replace("_scores", "")
 try:
     scores, labels = load_and_prepare_data(cancer_file, control_file)
     fpr, tpr, roc_auc, thresholds = calculate_roc(scores, labels)
+
+    # Split back to individual groups for boxplot
+    control_df = pd.read_csv(control_file)
+    cancer_df = pd.read_csv(cancer_file)
+    
+    control_scores = control_df['Mean Score'].values
+    cancer_scores = cancer_df['Mean Score'].values
 
     print(f"\nROC Analysis Results:")
     print(f"AUC Score: {roc_auc:.4f}")
@@ -81,6 +107,10 @@ try:
     
     output_path = plot_roc_curve(fpr, tpr, roc_auc, output_dir, dataset)
     print(f"ROC curve plot saved as: {output_path}")
+
+    # Plot boxplot
+    output_path_box = plot_boxplot(cancer_scores, control_scores, output_dir, dataset)
+    print(f"Boxplot saved as: {output_path_box}")
     
     optimal_idx = np.argmax(tpr - fpr)
     optimal_threshold = thresholds[optimal_idx]

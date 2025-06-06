@@ -3,7 +3,7 @@ import glob
 from collections import defaultdict
 
 CLUSTER_DIR = "/scratch/project/tcr_ml/GLIPH2_PICA_cdr3_outputs"
-SCORE_DIR = "/scratch/project/tcr_ml/gnn_release/model_2025_ccdi_only"
+SCORE_DIR = "/scratch/project/tcr_ml/gnn_release/model_2025_bulk"
 OUTPUT_DIR = os.path.join(SCORE_DIR, "pica_filtered_scores")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Root directory where subdirectories are located
-root_dir = "/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi_pica"
+root_dir = "/scratch/project/tcr_ml/gnn_release/model_2025_bulk"
 
 # Initialize a list to collect dataframes
 all_dfs = []
@@ -21,7 +21,7 @@ if all_dfs:
     combined_df = pd.concat(all_dfs, ignore_index=True)
 
     # Create the PICA subdirectory if it doesn't exist
-    output_dir = os.path.join(root_dir, "PICA_scores")
+    output_dir = os.path.join(root_dir, "pica_filtered_scores")
     os.makedirs(output_dir, exist_ok=True)
 
     # Save the combined CSV inside the PICA directory
