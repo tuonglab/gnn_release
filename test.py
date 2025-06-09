@@ -101,6 +101,17 @@ def test(
     sample_reprensatative_label = []
 
     for i, sample in enumerate(loader):
+        original_filename = filenames[i]
+        prefix = original_filename.split("_cdr3")[0]
+        # Check if any file in scores_dir matches: prefix_..._cdr3_scores.txt
+        existing_scores = [
+            f for f in os.listdir(scores_dir)
+            if f.startswith(f"{prefix}_") and f.endswith("_cdr3_scores.txt")
+        ] if os.path.exists(scores_dir) else []
+
+        if existing_scores:
+            print(f"Skipping already processed file: {original_filename} (found: {existing_scores[0]})")
+            continue
         sample_scores = []
         sample_labels = []
         try:

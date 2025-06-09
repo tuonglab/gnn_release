@@ -15,7 +15,7 @@ torch.manual_seed(46)
 np.random.seed(46)
 
 # Load model path to save here
-MODEL_PATH = "model_2025_isacs_ccdi"
+MODEL_PATH = "model_2025_bulk"
 MODEL_NAME = "best_model.pt"
 MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 
@@ -202,11 +202,14 @@ def main() -> None:
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue/processed",
         '/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed',
         # "/scratch/project/tcr_ml/gnn_release/dataset_v2/d360/processed",
-        "/scratch/project/tcr_ml/gnn_release/dataset_v2/scTRB/processed",
+        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/scTRB/processed",
+        # "/scratch/project/tcr_ml/gnn_release/test_data_v2/seekgene/processed"
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/tumor_tissue/processed"
     ]
     train_control_directories = [
-        "/scratch/project/tcr_ml/gnn_release/dataset_v2/control+pica/processed"
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/control/processed"
+        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/single_cell_control/processed",
+        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/control+pica/processed"
     ]
 
     train_set = load_train_data(train_cancer_directories, train_control_directories)

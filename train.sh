@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=24G
 #SBATCH --job-name=gnn_train
-#SBATCH --time=3:00:00
+#SBATCH --time=2:00:00
 #SBATCH --partition=gpu_cuda
 #SBATCH --gres=gpu:1
 #SBATCH --account=a_kelvin_tuong
@@ -14,7 +14,6 @@
 
 source ../gnn_env/bin/activate
 module load cuda/12.1
-# python train_model.py # reminder to change model path if neccessary
-python train_umap.py # change in accordance with the model path in train.py
+python train_model.py # reminder to change model path if neccessary
 # python plot.py # change in accordance with the model path in train.py
 # python scoring.py # change in accordance with model parth in train.py
