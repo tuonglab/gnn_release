@@ -80,7 +80,7 @@ def plot_roc_curve(fpr, tpr, roc_auc, output_dir, dataset):
     return output_path
 
 # File paths
-control_file = '/scratch/project/tcr_ml/gnn_release/model_2025_sc/pica_filtered_scores/metric_scores.csv'
+control_file = '/scratch/project/tcr_ml/gnn_release/model_2025_sc/val_control_scores/metric_scores.csv'
 cancer_file = '/scratch/project/tcr_ml/gnn_release/model_2025_sc/aml_zero_scores/metric_scores.csv'
 
 # Extract cancer and control dataset names and strip "_scores" suffix

@@ -159,7 +159,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--directory",
         type=str,
-        default="/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi_pica/PICA_scores/",
+        default="/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi_pica/pica_filtered_scores/",
         help="Directory containing input .txt and .csv files. Defaults to preset path."
     )
     args = parser.parse_args()
