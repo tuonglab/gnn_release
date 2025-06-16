@@ -14,7 +14,7 @@ torch.manual_seed(46)
 np.random.seed(46)
 
 # Load model path to save here
-MODEL_PATH = "model_2025_isacs_ccdi_pica"
+MODEL_PATH = "model_2025_sc_all_cancer"
 MODEL_NAME = "best_model.pt"
 MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 
@@ -88,16 +88,22 @@ def train(
         accuracy = total_correct / total_samples
         print(f"Epoch: {epoch+1}, Loss: {avg_loss}, Accuracy: {accuracy}")
 
-        min_delta_loss = 0.04
-        min_delta_acc = 0.02
+        min_delta_loss = 0.02
+        min_delta_acc = 0.01
+
+        improved = False
 
         if avg_loss < best_loss - min_delta_loss:
             best_loss = avg_loss
+            improved = True
+
+        if accuracy > best_accuracy + min_delta_acc:
+            best_accuracy = accuracy
+            improved = True
+
+        if improved:
             patience_counter = 0
             torch.save(model.state_dict(), MODEL_FILE)
-        elif accuracy > best_accuracy + min_delta_acc:
-            best_accuracy = accuracy
-            patience_counter = 0
         else:
             patience_counter += 1
 
@@ -106,6 +112,7 @@ def train(
                 f"Early stopping due to no improvement in loss or accuracy after {patience} epochs"
             )
             break
+
 
 
 def load_train_data(cancer_paths: list, control_paths: list):
@@ -136,7 +143,7 @@ def main() -> None:
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/tumor_tissue/processed",
     ]
     train_control_directories = [
-        "/scratch/project/tcr_ml/gnn_release/dataset_v2/control+pica/processed"
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/single_cell_control/processed"
     ]
 
     train_set = load_train_data(train_cancer_directories, train_control_directories)

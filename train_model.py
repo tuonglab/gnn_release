@@ -135,26 +135,28 @@ def train(
         accuracy = total_correct / total_samples  # Calculate accuracy
         print(f"Epoch: {epoch+1}, Loss: {avg_loss}, Accuracy: {accuracy}")
 
-        min_delta_loss = 0.04   # Minimum improvement required in loss
-        min_delta_acc = 0.02   # Minimum improvement required in accuracy
+        min_delta_loss = 0.02
+        min_delta_acc = 0.01
 
-        # Check for early stopping
+        improved = False
+
         if avg_loss < best_loss - min_delta_loss:
             best_loss = avg_loss
+            improved = True
+
+        if accuracy > best_accuracy + min_delta_acc:
+            best_accuracy = accuracy
+            improved = True
+
+        if improved:
             patience_counter = 0
             torch.save(model.state_dict(), MODEL_FILE)
-        elif accuracy > best_accuracy + min_delta_acc:
-            best_accuracy = accuracy
-            patience_counter = 0
         else:
             patience_counter += 1
 
-
         if patience_counter >= patience:
             print(
-                "Early stopping due to no improvement in loss or accuracy after {} epochs".format(
-                    patience
-                )
+                f"Early stopping due to no improvement in loss or accuracy after {patience} epochs"
             )
             break
 
