@@ -1,4 +1,3 @@
-# File: train_gatv2_hetero.py
 
 import os
 import numpy as np
@@ -6,13 +5,18 @@ import torch
 import torch.nn.functional as F
 from torch_geometric.loader import DataLoader
 from torch_geometric.nn import GATv2Conv, global_mean_pool
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from graph_generation.graph import load_graphs
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.manual_seed(46)
 np.random.seed(46)
 
-MODEL_PATH = "model_2025_hetero_isacs_ccdi"
+MODEL_PATH = "model_2025_hetero_isacs_ccdi_pica"
 MODEL_NAME = "best_model.pt"
 MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 
@@ -75,16 +79,29 @@ def train_hetero(model, loader, num_epochs=100, patience=15):
         accuracy = total_correct / total_samples
         print(f"[Epoch {epoch+1}] Loss: {avg_loss:.5f}, Acc: {accuracy:.5f}")
 
-        if avg_loss < best_loss or accuracy > best_accuracy:
+        min_delta_loss = 0.02
+        min_delta_acc = 0.01
+
+        improved = False
+
+        if avg_loss < best_loss - min_delta_loss:
             best_loss = avg_loss
-            best_accuracy = max(best_accuracy, accuracy)
+            improved = True
+
+        if accuracy > best_accuracy + min_delta_acc:
+            best_accuracy = accuracy
+            improved = True
+
+        if improved:
             patience_counter = 0
             torch.save(model.state_dict(), MODEL_FILE)
         else:
             patience_counter += 1
 
         if patience_counter >= patience:
-            print(f"Early stopping at epoch {epoch+1}")
+            print(
+                f"Early stopping due to no improvement in loss or accuracy after {patience} epochs"
+            )
             break
 
 
@@ -105,11 +122,11 @@ def main():
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue/processed",
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/scTRB/processed",
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/tumor_tissue/processed",
-        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed"
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed"
 
     ]
     train_control_directories = [
-        "/scratch/project/tcr_ml/gnn_release/dataset_v2/control/processed"
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/control+pica/processed"
     ]
 
     train_set = load_train_data(train_cancer_directories, train_control_directories)
