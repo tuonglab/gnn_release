@@ -4,8 +4,8 @@ import seaborn as sns
 import os
 
 # === File paths (update these to your actual locations) ===
-model_a_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_only/graph_level_uncertainty/uncertainty_graph_level_non_360_timepoints.csv"
-model_b_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi/graph_level_uncertainty/uncertainty_graph_level_non_360_timepoints.csv"
+model_a_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_only/graph_level_uncertainty/uncertainty_graph_level_pica_complete.csv"
+model_b_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi/graph_level_uncertainty/uncertainty_graph_level_pica_complete.csv"
 
 # === Output directory for saving plots ===
 output_dir = "/scratch/project/tcr_ml/gnn_release/uncertainty_evaluation/plots"

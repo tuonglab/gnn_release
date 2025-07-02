@@ -4,11 +4,11 @@ import seaborn as sns
 import os
 
 # Load the CSV data
-csv_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_only/graph_level_uncertainty/uncertainty_graph_level_phs002517.csv"
+csv_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_only/graph_level_uncertainty/uncertainty_graph_level_pica_complete.csv"
 df = pd.read_csv(csv_path)
 
 # Define name of the custom output folder
-output_subdir_name = "phs002517"  # <-- change this as needed
+output_subdir_name = "pica_complete"  # <-- change this as needed
 
 # Define full output path
 base_dir = os.path.dirname(csv_path)
