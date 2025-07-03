@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 
-MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi/best_model.pt"
+MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi_pica/best_model.pt"
 @torch.no_grad()
 def mc_dropout_predict(model, data, T=20):
     model.train()  # force dropout on

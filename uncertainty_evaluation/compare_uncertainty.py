@@ -4,8 +4,8 @@ import seaborn as sns
 import os
 
 # === File paths (update these to your actual locations) ===
-model_a_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_only/graph_level_uncertainty/uncertainty_graph_level_pica_complete.csv"
-model_b_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi/graph_level_uncertainty/uncertainty_graph_level_pica_complete.csv"
+model_a_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi/graph_level_uncertainty/uncertainty_graph_level_pica_complete.csv"
+model_b_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi_pica/graph_level_uncertainty/uncertainty_graph_level_pica_complete.csv"
 
 # === Output directory for saving plots ===
 output_dir = "/scratch/project/tcr_ml/gnn_release/uncertainty_evaluation/plots"
@@ -15,12 +15,12 @@ os.makedirs(output_dir, exist_ok=True)
 df_a = pd.read_csv(model_a_path)
 df_b = pd.read_csv(model_b_path)
 
-df_a["model"] = "ISACS Only"
-df_b["model"] = "ISACS + CCDI"
+df_a["model"] = "ISACS CCDI"
+df_b["model"] = "ISACS + CCDI + PICA"
 
 # Set true label (e.g., cancer = 1 for aml_zero)
-df_a["true_label"] = 1
-df_b["true_label"] = 1
+df_a["true_label"] = 0
+df_b["true_label"] = 0
 
 # Combine data
 df = pd.concat([df_a, df_b], ignore_index=True)
