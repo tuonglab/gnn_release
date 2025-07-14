@@ -4,8 +4,10 @@ import glob
 import subprocess
 import os
 import tarfile
+import traceback
 import shutil
 from concurrent.futures import ThreadPoolExecutor
+from alternative_parser import write_edges
 
 
 def extract_tar_file(tar_file) -> str:
@@ -89,6 +91,7 @@ def check_all_distances(pdb_file, output_dir):
     Returns:
     None
     """
+
     try:
         parser = PDBParser()
         structure = parser.get_structure("protein", pdb_file)
@@ -119,8 +122,14 @@ def check_all_distances(pdb_file, output_dir):
                                 f.write(
                                     f"{residue1.get_resname()} {residue1.id[1]} {residue2.get_resname()} {residue2.id[1]}\n"
                                 )
-    except:
-        print(pdb_file)
+    except ValueError as e:
+        msg = str(e)
+        # only catch the int() parsing failure for insertion codes
+        if msg.startswith("invalid literal for int()"):
+            write_edges(pdb_file, output_dir)
+        else:
+            print(f"Error processing {pdb_file}: {e}")
+            traceback.print_exc()
 
 
 def main():

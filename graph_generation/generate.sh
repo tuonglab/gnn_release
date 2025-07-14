@@ -4,19 +4,19 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
 #SBATCH --job-name=edge
-#SBATCH --time=00:10:00
+#SBATCH --time=00:50:00
 #SBATCH --partition=general
 #SBATCH --account=a_kelvin_tuong
 #SBATCH -e pytorch.error
 #SBATCH -o pytorch.out
 
 # Define shared dataset ID
-DATASET_ID="20250114_WGS_20241218_sc_PICA0071-PICA0097_Pool_8"
+DATASET_ID="control_training"
 
 # Define base paths
 ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"
 SCRIPT_PATH="/scratch/project/tcr_ml/gnn_release/graph_generation/process.py"
-BASE_DIR="/scratch/project/tcr_ml/gnn_release/test_data_v2"
+BASE_DIR="/scratch/project/tcr_ml/gnn_release/dataset_boltz"
 
 # Construct full paths
 ROOT_DIR="${BASE_DIR}/${DATASET_ID}"

@@ -11,13 +11,13 @@
 #SBATCH -o edge_gen.out
 
 # Define shared dataset ID
-DATASET_ID="20250114_WGS_20241218_sc_PICA0071-PICA0097_Pool_8"
+DATASET_ID="tower_predictions"
 
 # Define base paths
 ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"
 SCRIPT_PATH="/scratch/project/tcr_ml/gnn_release/graph_generation/create_edgelist.py"
-INPUT_BASE="/scratch/project/tcr_ml/colabfold/results_2/prediction"
-OUTPUT_BASE="/scratch/project/tcr_ml/gnn_release/test_data_v2"
+INPUT_BASE="/QRISdata/Q7753"
+OUTPUT_BASE="/scratch/project/tcr_ml/gnn_release/dataset_boltz"
 
 # Construct input/output directories using the dataset ID
 INPUT_DIR="${INPUT_BASE}/${DATASET_ID}"
