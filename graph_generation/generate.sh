@@ -11,7 +11,7 @@
 #SBATCH -o pytorch.out
 
 # Define shared dataset ID
-DATASET_ID="control_training"
+DATASET_ID="tower_predictions"
 
 # Define base paths
 ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"

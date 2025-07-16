@@ -103,6 +103,8 @@ def test(
     for i, sample in enumerate(loader):
         original_filename = filenames[i]
         prefix = original_filename.split("_cdr3")[0]
+
+
         # Check if any file in scores_dir matches: prefix_..._cdr3_scores.txt
         existing_scores = [
             f for f in os.listdir(scores_dir)

@@ -21,3 +21,5 @@ model_2025_360.tar.gz
 model_2025_mixed.tar.gz
 model_2025*
 evaluate_uncertainty_isacs_only.py
+dataset_boltz
+models.tar.gz

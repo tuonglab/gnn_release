@@ -4,19 +4,19 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=32G
 #SBATCH --job-name=predict_gnn
-#SBATCH --time=04:20:00
+#SBATCH --time=02:20:00
 #SBATCH --partition=general
 #SBATCH --account=a_kelvin_tuong
 #SBATCH -e test_cpu.error
-#SBATCH -o tets_cpu.out
+#SBATCH -o test_cpu.out
 
 # Activate environment
 source ../gnn_env/bin/activate
 
 # Define paths and names
-MODEL_PATH="/scratch/project/tcr_ml/gnn_release/model_2025_sc"
-DATASET_NAME="val_control"
-DATASET_PATH="/scratch/project/tcr_ml/gnn_release/test_data_v2/${DATASET_NAME}/processed"
+MODEL_PATH="/scratch/project/tcr_ml/gnn_release/model_2025_prem_boltz"
+DATASET_NAME="seekgene_boltz"
+DATASET_PATH="/scratch/project/tcr_ml/gnn_release/dataset_boltz/${DATASET_NAME}/processed"
 SCORES_DIR="${MODEL_PATH}/${DATASET_NAME}_scores"
 
 # Run test script (with dataset name so scores folder is named correctly)
