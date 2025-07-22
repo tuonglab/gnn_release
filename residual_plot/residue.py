@@ -3,10 +3,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Bio.PDB import PDBParser
 
+import os
+import numpy as np
+import matplotlib
+matplotlib.use("pdf")  # Use PDF backend for vector output
+import matplotlib.pyplot as plt
+from Bio.PDB import PDBParser
+
+# Set global font to be Illustrator-compatible
+plt.rcParams["pdf.fonttype"] = 42  # Use TrueType fonts
+plt.rcParams["ps.fonttype"] = 42
+
 # Output settings
 DISTANCE_THRESHOLD = 8.0  # Å
-OUTPUT_FILE = "all_contact_maps.png"
-FREQ_OUTPUT_FILE = "contact_frequency_heatmap.png"
+OUTPUT_FILE = "all_contact_maps.pdf"
+FREQ_OUTPUT_FILE = "contact_frequency_heatmap.pdf"
 
 # 3-letter to 1-letter amino acid mapping
 three_to_one = {
@@ -73,7 +84,7 @@ def compute_contact_frequency(pdb_paths):
 
 # === Main: Process all PDB files ===
 if __name__ == "__main__":
-    input_folder = "/scratch/project/tcr_ml/boltz1/seeds"
+    input_folder = "/scratch/project/tcr_ml/boltz1/seed/seeds"
     pdb_files = sorted([f for f in os.listdir(input_folder) if f.endswith(".pdb")])
     num_files = len(pdb_files)
     full_paths = [os.path.join(input_folder, f) for f in pdb_files]
@@ -89,7 +100,7 @@ if __name__ == "__main__":
         try:
             matrix, labels = generate_contact_matrix(full_path)
             ax = axes[idx]
-            ax.imshow(matrix, cmap="Greys", interpolation="none")
+            ax.imshow(matrix, cmap="Greys", interpolation="none",rasterized=True)
             ax.set_title(pdb_file, fontsize=8)
             ax.set_xticks(range(len(labels)))
             ax.set_yticks(range(len(labels)))
@@ -103,20 +114,20 @@ if __name__ == "__main__":
         axes[i].axis("off")
 
     plt.tight_layout()
-    plt.savefig(OUTPUT_FILE, dpi=300)
+    plt.savefig(OUTPUT_FILE,dpi=500)
     print(f"\nCombined contact map saved to {OUTPUT_FILE}")
 
     # === Compute and plot contact frequency heatmap ===
     contact_freq_matrix, freq_labels = compute_contact_frequency(full_paths)
 
     plt.figure(figsize=(8, 6))
-    plt.imshow(contact_freq_matrix, cmap="YlGnBu", interpolation="none")
+    plt.imshow(contact_freq_matrix, cmap="YlGnBu", interpolation="none",rasterized=True)
     plt.xticks(range(len(freq_labels)), freq_labels, fontsize=8, rotation=90)
     plt.yticks(range(len(freq_labels)), freq_labels, fontsize=8)
     plt.colorbar(label="Number of Models with Contact")
     plt.title("Residue-Residue Contact Frequency Across Models")
     plt.tight_layout()
-    plt.savefig(FREQ_OUTPUT_FILE, dpi=300)
+    plt.savefig(FREQ_OUTPUT_FILE,dpi=1600,bbox_inches="tight")
     plt.show()
 
     print(f"Contact frequency heatmap saved to {FREQ_OUTPUT_FILE}")
