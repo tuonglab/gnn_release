@@ -82,9 +82,48 @@ def compute_contact_frequency(pdb_paths):
     contact_freq_matrix = np.sum(all_contact_matrices, axis=0)
     return contact_freq_matrix, reference_labels
 
+import networkx as nx
+
+def draw_consensus_graph(contact_freq_matrix, labels, num_models, threshold=0.9, output_path=None):
+    import networkx as nx
+
+    G = nx.Graph()
+    n = len(labels)
+
+    # Add nodes
+    for i in range(n):
+        G.add_node(i, label=labels[i])
+
+    # Add edges with fixed styling if frequency meets threshold
+    for i in range(n):
+        for j in range(i + 1, n):
+            freq = contact_freq_matrix[i][j]
+            if freq / num_models >= threshold:
+                G.add_edge(i, j)
+
+    # Layout
+    pos = nx.spring_layout(G, seed=42)
+
+    # Draw the graph
+    plt.figure(figsize=(10, 8))
+    nx.draw_networkx_nodes(G, pos, node_size=300, node_color="lightblue")
+    nx.draw_networkx_edges(G, pos, width=1.5, edge_color="gray")
+    nx.draw_networkx_labels(G, pos, labels={i: labels[i] for i in G.nodes}, font_size=8)
+
+    plt.title(f"Consensus Contact Graph Boltz Structure")
+    plt.axis("off")
+    plt.tight_layout()
+
+    if output_path:
+        plt.savefig(output_path, dpi=600)
+        print(f"Consensus contact graph saved to {output_path}")
+    else:
+        plt.show()
+
+
 # === Main: Process all PDB files ===
 if __name__ == "__main__":
-    input_folder = "/scratch/project/tcr_ml/boltz1/seed/seeds"
+    input_folder = "/scratch/project/tcr_ml/boltz1/seed/seeded_test"
     pdb_files = sorted([f for f in os.listdir(input_folder) if f.endswith(".pdb")])
     num_files = len(pdb_files)
     full_paths = [os.path.join(input_folder, f) for f in pdb_files]
@@ -131,3 +170,9 @@ if __name__ == "__main__":
     plt.show()
 
     print(f"Contact frequency heatmap saved to {FREQ_OUTPUT_FILE}")
+
+        # === Compute and plot contact frequency heatmap ===
+    contact_freq_matrix, freq_labels = compute_contact_frequency(full_paths)
+
+    draw_consensus_graph(contact_freq_matrix, freq_labels, num_models=len(full_paths),
+                         threshold=0.9, output_path="consensus_contact_graph.pdf")
