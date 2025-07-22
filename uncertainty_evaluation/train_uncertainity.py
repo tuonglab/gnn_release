@@ -16,7 +16,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.manual_seed(46)
 np.random.seed(46)
 
-MODEL_PATH = "model_2025_hetero_isacs_ccdi_pica"
+MODEL_PATH = "model_2025_uncertainty_curated"
 MODEL_NAME = "best_model.pt"
 MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 
@@ -44,6 +44,7 @@ class GATv2Heteroscedastic(torch.nn.Module):
 def heteroscedastic_bce_loss(logits, log_var, labels):
     out_1 = logits[:, 1]
     bce = F.binary_cross_entropy_with_logits(out_1, labels.float(), reduction='none')
+    # log_var = torch.clamp(log_var, min=-10.0, max=10.0)
     precision = torch.exp(-log_var.squeeze(-1))
     loss = 0.5 * precision * bce + 0.5 * log_var.squeeze(-1)
     return loss.mean()
@@ -67,6 +68,7 @@ def train_hetero(model, loader, num_epochs=100, patience=15):
                 logits, log_var = model(data.x, data.edge_index, data.batch)
                 loss = heteroscedastic_bce_loss(logits, log_var, data.y)
                 loss.backward()
+                # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 optimizer.step()
 
                 batch_size = data.y.size(0)
@@ -126,7 +128,11 @@ def main():
 
     ]
     train_control_directories = [
-        "/scratch/project/tcr_ml/gnn_release/dataset_v2/control+pica/processed"
+        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/control+pica/processed",
+        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/control/processed",
+        # "/scratch/project/tcr_ml/gnn_release/test_data_v2/pica_complete/processed"
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/curated/processed",
+        # "/scratch/project/tcr_ml/gnn_release/dataset_v2/single_cell_control/processed"
     ]
 
     train_set = load_train_data(train_cancer_directories, train_control_directories)

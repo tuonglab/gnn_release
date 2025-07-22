@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 
-MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi_pica/best_model.pt"
+MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/uncertainty_evaluation/model_2025_uncertainty_curated/best_model.pt"
 @torch.no_grad()
 def mc_dropout_predict(model, data, T=20):
     model.train()  # force dropout on
@@ -117,7 +117,7 @@ def load_eval_data(path):
 def main():
 
 
-    test_dir = "/scratch/project/tcr_ml/gnn_release/test_data_v2/pica_complete/processed"
+    test_dir = "/scratch/project/tcr_ml/gnn_release/test_data_v2/val_control/processed"
     prefix = "/scratch/project/tcr_ml/gnn_release"
 
     rel_parts = Path(test_dir).relative_to(prefix).parts
@@ -136,7 +136,7 @@ def main():
     model.load_state_dict(torch.load(MODEL_FILE))
     model.eval()
 
-    results_df, per_graph_df = evaluate_mc_dropout(model, test_set, T=30, return_individual=True)
+    results_df, per_graph_df = evaluate_mc_dropout(model, test_set, T=25, return_individual=True)
 
     # Summary statistics
     print_uncertainty_summary(results_df, print_mode="all")
