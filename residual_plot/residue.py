@@ -13,7 +13,7 @@ plt.rcParams["ps.fonttype"] = 42
 # Output settings
 DISTANCE_THRESHOLD = 8.0  # Å
 OUTPUT_FILE = "all_contact_maps.pdf"
-FREQ_OUTPUT_FILE = "unrasterised_contact_frequency_heatmap.pdf"
+FREQ_OUTPUT_FILE = "rasterised_contact_frequency_heatmap.pdf"
 RASTERIZED = False  # Control rasterization of imshow
 
 # 3-letter to 1-letter amino acid mapping
@@ -116,7 +116,7 @@ def draw_consensus_graph(contact_freq_matrix, labels, num_models, threshold=0.9,
 
 # === Main: Process all PDB files ===
 if __name__ == "__main__":
-    input_folder = "/scratch/project/tcr_ml/colabfold/seed/output_test"
+    input_folder = "/scratch/project/tcr_ml/boltz1/seed/seeded_test"
     pdb_files = sorted([f for f in os.listdir(input_folder) if f.endswith(".pdb")])
     num_files = len(pdb_files)
     full_paths = [os.path.join(input_folder, f) for f in pdb_files]
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     contact_freq_matrix, freq_labels = compute_contact_frequency(full_paths)
 
     plt.figure(figsize=(8, 6))
-    plt.imshow(contact_freq_matrix, cmap="YlGnBu", interpolation="none", rasterized=RASTERIZED)
+    plt.imshow(contact_freq_matrix, cmap="viridis", interpolation="none", rasterized=RASTERIZED)
     plt.xticks(range(len(freq_labels)), freq_labels, fontsize=8, rotation=90)
     plt.yticks(range(len(freq_labels)), freq_labels, fontsize=8)
     plt.colorbar(label="Number of Models with Contact")
