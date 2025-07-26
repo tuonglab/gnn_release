@@ -13,7 +13,7 @@ plt.rcParams["ps.fonttype"] = 42
 # Output settings
 DISTANCE_THRESHOLD = 8.0  # Å
 OUTPUT_FILE = "all_contact_maps.pdf"
-FREQ_OUTPUT_FILE = "rasterised_contact_frequency_heatmap.pdf"
+FREQ_OUTPUT_FILE = "unrasterised_contact_frequency_heatmap.pdf"
 RASTERIZED = False  # Control rasterization of imshow
 
 # 3-letter to 1-letter amino acid mapping
@@ -116,7 +116,7 @@ def draw_consensus_graph(contact_freq_matrix, labels, num_models, threshold=0.9,
 
 # === Main: Process all PDB files ===
 if __name__ == "__main__":
-    input_folder = "/scratch/project/tcr_ml/boltz1/seed/seeded_test"
+    input_folder = "/scratch/project/tcr_ml/colabfold/seed/output_test"
     pdb_files = sorted([f for f in os.listdir(input_folder) if f.endswith(".pdb")])
     num_files = len(pdb_files)
     full_paths = [os.path.join(input_folder, f) for f in pdb_files]
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     plt.colorbar(label="Number of Models with Contact")
     plt.title("Residue-Residue Contact Frequency Across Models")
     plt.tight_layout()
-    plt.savefig(FREQ_OUTPUT_FILE, dpi=1600, bbox_inches="tight")
+    plt.savefig(FREQ_OUTPUT_FILE, dpi=300, bbox_inches="tight")
     plt.show()
 
     print(f"Contact frequency heatmap saved to {FREQ_OUTPUT_FILE}")
