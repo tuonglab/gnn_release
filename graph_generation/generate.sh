@@ -11,19 +11,19 @@
 #SBATCH -o pytorch.out
 
 # Define shared dataset ID
-DATASET_ID="tower_predictions"
+DATASET_ID="theragen"
 
 # Define base paths
 ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"
 SCRIPT_PATH="/scratch/project/tcr_ml/gnn_release/graph_generation/process.py"
-BASE_DIR="/scratch/project/tcr_ml/gnn_release/dataset_boltz"
+BASE_DIR="/scratch/project/tcr_ml/gnn_release/test_data_v2"
 
 # Construct full paths
 ROOT_DIR="${BASE_DIR}/${DATASET_ID}"
 RAW_DIR="${ROOT_DIR}/raw"
 
 # Set flag for cancer classification (set to "--cancer" or leave empty "")
-CANCER_FLAG=""  # Set to "" if not cancer dataset
+CANCER_FLAG="--cancer"  # Set to "" if not cancer dataset
 
 # Activate the virtual environment
 source "$ENV_PATH"
