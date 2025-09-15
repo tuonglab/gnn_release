@@ -26,9 +26,16 @@ def batch_process(seq_dir, prob_dir, output_dir,
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    seq_pattern  = re.compile(r'(.+?)\.csv$')
-    prob_pattern = re.compile(r'(.+?)_\d+_cancer_cdr3_scores\.txt$')
-    
+    seq_pattern = re.compile(
+        r'(?:TRUST_)?(.+?)_(?:cdr3_trb_frequencies|airr_extracted_trb_frequencies_filtered)\.csv$'
+    )
+
+    prob_pattern = re.compile(
+    r'(?:TRUST_)?(.+?)(?:_extracted.*|_\d+)?_cancer_cdr3_scores\.txt$'
+)
+
+
+        
     # Map prefix -> seq CSV path
     seq_files = {}
     for f in seq_dir.glob('*.csv'):
@@ -44,6 +51,7 @@ def batch_process(seq_dir, prob_dir, output_dir,
         if m:
             prefix = m.group(1)
             prob_files[prefix] = f
+   
     
     summary = []
     
@@ -67,7 +75,7 @@ def batch_process(seq_dir, prob_dir, output_dir,
             'num_high': len(high_idx),
             'total_seqs': len(df_merged)
         })
-        print(f"[INFO] {prefix}: score={weight_score:.4f}, high={len(high_idx)}/{len(df_merged)}")
+        # print(f"[INFO] {prefix}: score={weight_score:.4f}, high={len(high_idx)}/{len(df_merged)}")
     
     df_summary = pd.DataFrame(summary)
     summary_path = output_dir / "summary.csv"
@@ -76,8 +84,8 @@ def batch_process(seq_dir, prob_dir, output_dir,
 
 # Example usage:
 batch_process(
-    seq_dir="/scratch/project/tcr_ml/iCanTCR/seekgene",
-    prob_dir="/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi_pica/seekgene_scores",
-    output_dir="./output_folder"
+    seq_dir="/scratch/project/tcr_ml/iCanTCR/gnn_benchmarking_data_clonal_freq/phs002517",
+    prob_dir="/scratch/project/tcr_ml/gnn_release/model_2025_bulk/phs002517_scores",
+    output_dir="model_2025_bulk/phs002517"
 )
 

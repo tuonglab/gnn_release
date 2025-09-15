@@ -28,7 +28,6 @@ def batch_process(seq_dir, prob_dir, output_dir, top_n=50, threshold=0.6):
         key = f"{pool_name}_{idx}"
         seq_files[key] = seq_csv
 
-    # Map keys to prob TXT files under *_scores dirs
     prob_files = {}
     pattern = re.compile(r'(.+_Pool_\d+)_([0-9]+)_\d+_control_cdr3_scores\.txt$')
     for prob_txt in prob_dir.rglob('*.txt'):
@@ -64,7 +63,7 @@ def batch_process(seq_dir, prob_dir, output_dir, top_n=50, threshold=0.6):
 
 # Example call:
 batch_process(
-   seq_dir="/scratch/project/tcr_ml/iCanTCR/PICA_GLIPH",
-   prob_dir="/scratch/project/tcr_ml/gnn_release/model_2025_isacs_ccdi_pica",
-   output_dir="./output_folder"
+   seq_dir="/scratch/project/tcr_ml/iCanTCR/gnn_benchmarking_data_clonal_freq/PICA",
+   prob_dir="/scratch/project/tcr_ml/gnn_release/model_2025_bulk",
+   output_dir="model_2025_bulk/PICA"
 )
