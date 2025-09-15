@@ -6,6 +6,7 @@ import re
 
 def process_sequences(df_freq, df_prob, top_n=50, threshold=0.6):
     df = pd.merge(df_freq, df_prob, on='AA_seq', how='inner')
+    df = df.sort_values('CloneFreq', ascending=False)
     df['high'] = df['prob'] > threshold
     high_idx = df.index[df['high']].tolist()
     df_top = df.iloc[:min(top_n, len(df))]
