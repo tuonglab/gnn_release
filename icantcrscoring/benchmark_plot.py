@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import numpy as np
 
-gnn_no_clonal_weightage = pd.read_csv("/scratch/project/tcr_ml/gnn_release/model_2025_sc_curated/sarcoma_zero_scores/metric_scores.csv")
-gnn_clonal_weightage = pd.read_csv('/scratch/project/tcr_ml/gnn_release/icantcrscoring/model_2025_sc_curated/sarcoma_zero/summary.csv')
-icantcr_scoring = pd.read_csv('/scratch/project/tcr_ml/iCanTCR/output/sarcoma_zero/summary_sarcoma_zero_result.csv')
+gnn_no_clonal_weightage = pd.read_csv("/scratch/project/tcr_ml/gnn_release/model_2025_sc_curated/seekgene_scores/metric_scores.csv")
+gnn_clonal_weightage = pd.read_csv('/scratch/project/tcr_ml/gnn_release/icantcrscoring/model_2025_sc_curated/seekgene/summary.csv')
+icantcr_scoring = pd.read_csv('/scratch/project/tcr_ml/iCanTCR/output/seekgene/summary_seekgene_result.csv')
 
 scores = {
     "GNN (no clonal weightage)": gnn_no_clonal_weightage["Mean Score"],
@@ -14,7 +14,7 @@ scores = {
 }
 
 
-dataset = "sarcoma_zero"
+dataset = "seekgene"
 
 plt.figure(figsize=(16, 10))
 plt.boxplot(scores.values(), labels=scores.keys())
@@ -93,4 +93,4 @@ models = {
     )
 }
 
-plot_roc_between_groups(models, cancer_name="sarcoma_zero", control_name="PICA")
+plot_roc_between_groups(models, cancer_name="seekgene", control_name="PICA")
