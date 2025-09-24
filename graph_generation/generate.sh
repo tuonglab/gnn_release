@@ -4,14 +4,14 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
 #SBATCH --job-name=edge
-#SBATCH --time=00:50:00
+#SBATCH --time=01:50:00
 #SBATCH --partition=general
 #SBATCH --account=a_kelvin_tuong
 #SBATCH -e pytorch.error
 #SBATCH -o pytorch.out
 
 # Define shared dataset ID
-DATASET_ID="PICA_boltz"
+DATASET_ID="tower_predictions"
 
 # Define base paths
 ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"
