@@ -16,7 +16,7 @@
 source ../gnn_env/bin/activate
 
 # Define paths and names
-MODEL_PATH="/scratch/project/boltz1_tcr_fold/gnn_models/model_2025_sc_curated"
+MODEL_PATH="/scratch/project/tcr_ml/gnn_release/model_2025_sc"
 DATASET_NAME="theragen"
 DATASET_PATH="/scratch/project/tcr_ml/gnn_release/test_data_v2/${DATASET_NAME}/processed"
 SCORES_DIR="${MODEL_PATH}/${DATASET_NAME}_scores"
