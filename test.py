@@ -133,6 +133,14 @@ def test(
 
         mean_sample_scores = np.mean(sample_scores)
         mean_sample_labels = np.mean(sample_labels)
+        # Check if mean_sample_labels is NaN or list/array of NaNs
+        if np.isnan(mean_sample_labels) or (
+            isinstance(sample_labels, (list, np.ndarray)) and np.all(np.isnan(sample_labels))
+        ):
+            print(f"Skipped file: {filenames[i]} (mean_sample_labels is NaN)")
+            continue
+
+        print(f"Processed file: {filenames[i]} | Mean Score: {mean_sample_scores:.4f} | Mean Label: {mean_sample_labels:.4f}")
 
         scores_filename = create_filename(int(mean_sample_labels), filenames[i], i, suffix="scores.txt")
         save_scores_to_file(sample_scores, filenames[i], scores_filename, scores_dir)
