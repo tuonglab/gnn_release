@@ -81,20 +81,9 @@ def process_tar_file(tar_file, output_base_dir) -> None:
 
 
 def check_all_distances(pdb_file, output_dir):
-    """
-    Check all distances between residues in a protein structure and generate an edge list file.
-
-    Parameters:
-    - pdb_file (str): The path to the PDB file containing the protein structure.
-    - output_dir (str): The directory where the output edge list file will be saved.
-
-    Returns:
-    None
-    """
-
     try:
-        parser = PDBParser()
-        structure = parser.get_structure("protein", pdb_file)
+        structure = load_structure_sanitized(pdb_file)
+
         pdb_file_name = os.path.basename(pdb_file)
         output_file_name = pdb_file_name.replace(".pdb", "_edge.txt")
         output_file = os.path.join(output_dir, output_file_name)
@@ -102,34 +91,66 @@ def check_all_distances(pdb_file, output_dir):
         with open(output_file, "w") as f:
             for model in structure:
                 for chain in model:
-                    residues = [residue for residue in chain if residue.has_id("CA")]
-                    for i in range(len(residues)):
-                        for j in range(i + 1, len(residues)):
-                            residue1 = residues[i]
-                            residue2 = residues[j]
-                            atom1 = (
-                                residue1["CB"]
-                                if residue1.get_resname() != "GLY"
-                                else residue1["CA"]
-                            )
-                            atom2 = (
-                                residue2["CB"]
-                                if residue2.get_resname() != "GLY"
-                                else residue2["CA"]
-                            )
-                            distance = atom1 - atom2
-                            if distance <= 8.0:
-                                f.write(
-                                    f"{residue1.get_resname()} {residue1.id[1]} {residue2.get_resname()} {residue2.id[1]}\n"
-                                )
-    except ValueError as e:
-        msg = str(e)
-        # only catch the int() parsing failure for insertion codes
-        if msg.startswith("invalid literal for int()"):
+                    residues = [r for r in chain if r.has_id("CA")]
+                    n = len(residues)
+                    for i in range(n):
+                        for j in range(i + 1, n):
+                            r1 = residues[i]
+                            r2 = residues[j]
+                            try:
+                                a1 = atom_for_distance(r1)
+                                a2 = atom_for_distance(r2)
+                                d = a1 - a2
+                                if d <= 8.0:
+                                    f.write(f"{r1.get_resname()} {r1.id[1]} {r2.get_resname()} {r2.id[1]}\n")
+                            except KeyError:
+                                # skip pairs with missing atoms
+                                continue
+    except Exception as e:
+        # Last resort, your tolerant fallback
+        try:
             write_edges(pdb_file, output_dir)
-        else:
-            print(f"Error processing {pdb_file}: {e}")
+        except Exception as e2:
+            print(f"Error processing {pdb_file}: {e} (fallback also failed: {e2})")
             traceback.print_exc()
+
+from io import StringIO
+from Bio.PDB import PDBParser
+from Bio.PDB.PDBExceptions import PDBConstructionException
+
+def sanitize_pdb_text(pdb_text: str) -> str:
+    """
+    Fix common malformed PDB issues on the fly.
+    1) Two digit insertion codes that shifted columns: insert a blank iCode at col 27.
+    """
+    out = []
+    for line in pdb_text.splitlines(keepends=True):
+        if line.startswith(("ATOM  ", "HETATM")) and len(line) > 27:
+            # resSeq is cols 23-26 (0-based 22:26), iCode is col 27 (0-based 26)
+            if line[22:26].strip().isdigit() and line[26].isdigit():
+                # Two digits leaking into iCode, insert a space at col 27
+                line = line[:26] + " " + line[26:]
+        out.append(line)
+    return "".join(out)
+
+def load_structure_sanitized(pdb_path: str):
+    """
+    Try normal parse. If it fails, read the file, sanitize in memory,
+    then parse from a StringIO handle.
+    """
+    parser = PDBParser(QUIET=True)
+    try:
+        return parser.get_structure("protein", pdb_path)
+    except (ValueError, PDBConstructionException):
+        with open(pdb_path, "r") as fh:
+            raw = fh.read()
+        fixed = sanitize_pdb_text(raw)
+        fh_like = StringIO(fixed)
+        return parser.get_structure("protein", fh_like)
+
+def atom_for_distance(res):
+    # Prefer CB when present, fallback to CA
+    return res["CB"] if res.has_id("CB") else res["CA"]
 
 
 def main():
