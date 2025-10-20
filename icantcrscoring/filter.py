@@ -108,7 +108,7 @@ def batch_process(seq_dir, prob_dir, output_dir, top_n=50, threshold=0.6):
 
 # Example usage:
 batch_process(
-    seq_dir="/scratch/project/tcr_ml/iCanTCR/gnn_benchmarking_data_clonal_freq/theragen",
-    prob_dir="/scratch/project/tcr_ml/gnn_release/model_2025_sc_curated/theragen_scores",
-    output_dir="model_2025_sc_curated/theragen",
+    seq_dir="/scratch/project/tcr_ml/iCanTCR/gnn_benchmarking_data_clonal_freq/phs002517",
+    prob_dir="/scratch/project/tcr_ml/gnn_release/model_2025_boltz_111/phs002517_boltz_scores",
+    output_dir="model_2025_boltz/phs002517",
 )

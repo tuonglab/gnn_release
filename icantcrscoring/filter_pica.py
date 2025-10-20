@@ -84,6 +84,6 @@ def batch_process(seq_dir, prob_dir, output_dir, top_n=50, threshold=0.6):
 # Example call:
 batch_process(
    seq_dir="/scratch/project/tcr_ml/iCanTCR/gnn_benchmarking_data_clonal_freq/PICA",
-   prob_dir="/scratch/project/tcr_ml/gnn_release/model_2025_sc_curated",
-   output_dir="model_2025_sc_curated/PICA"
+   prob_dir="/scratch/project/tcr_ml/gnn_release/model_2025_boltz_111/PICA_validation_scores",
+   output_dir="model_2025_boltz/PICA"
 )
