@@ -11,11 +11,11 @@ from graph_generation.graph import load_graphs
 
 # Set the random seed for reproducibility
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.manual_seed(46)
-np.random.seed(46)
+torch.manual_seed(111)
+np.random.seed(111)
 
 # Load model path to save here
-MODEL_PATH = "model_2025_updated_boltz"
+MODEL_PATH = "model_2025_boltz_111"
 MODEL_NAME = "best_model.pt"
 MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 
@@ -135,7 +135,7 @@ def train(
         accuracy = total_correct / total_samples  # Calculate accuracy
         print(f"Epoch: {epoch+1}, Loss: {avg_loss}, Accuracy: {accuracy}")
 
-        min_delta_loss = 0.02
+        min_delta_loss = 0.01
         min_delta_acc = 0.01
 
         improved = False
@@ -190,6 +190,11 @@ def load_train_data(cancer_paths: list, control_paths: list):
             for filename in os.listdir(control_path):
                 file_path = os.path.join(control_path, filename)
                 graphs = load_graphs(file_path)
+                # for graph in graphs:
+                #     if graph.y.item() != 0:
+                #         graph.y = torch.tensor([0], dtype=torch.long)
+                # print(graphs)
+                # torch.save(graphs, f"{file_path}.pt")
                 training_set.append(graphs)
 
     return training_set
@@ -207,11 +212,12 @@ def main() -> None:
         "/scratch/project/tcr_ml/gnn_release/dataset_boltz/tumor_tissue_predictions/processed",
     ]
     train_control_directories = [
-        "/scratch/project/tcr_ml/gnn_release/dataset_boltz/curated/processed",
+        # "/scratch/project/tcr_ml/gnn_release/dataset_boltz/curated/processed",
         # "/scratch/project/tcr_ml/gnn_release/dataset_v2/control/processed"
         # "/scratch/project/tcr_ml/gnn_release/dataset_v2/single_cell_control/processed",
         # "/scratch/project/tcr_ml/gnn_release/dataset_v2/control+pica/processed",
-        # "/scratch/project/tcr_ml/gnn_release/dataset_boltz/control_training/processed"
+        "/scratch/project/tcr_ml/gnn_release/dataset_boltz/curated/processed",
+        # "/scratch/project/tcr_ml/gnn_release/dataset_boltz/bulk_control_val/processed"
     ]
 
     train_set = load_train_data(train_cancer_directories, train_control_directories)

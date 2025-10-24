@@ -5,7 +5,7 @@
 #SBATCH --mem=32G
 #SBATCH --gres=gpu:1
 #SBATCH --job-name=predict_gnn
-#SBATCH --time=1:10:00
+#SBATCH --time=3:30:00
 #SBATCH --partition=gpu_cuda
 #SBATCH --qos=gpu
 #SBATCH --account=a_kelvin_tuong
@@ -16,9 +16,9 @@
 source ../gnn_env/bin/activate
 
 # Define paths and names
-MODEL_PATH="/scratch/project/tcr_ml/gnn_release/model_2025_sc"
-DATASET_NAME="theragen"
-DATASET_PATH="/scratch/project/tcr_ml/gnn_release/test_data_v2/${DATASET_NAME}/processed"
+MODEL_PATH="/scratch/project/tcr_ml/gnn_release/model_2025_boltz_111"
+DATASET_NAME="sarcoma_zero_boltz"
+DATASET_PATH="/scratch/project/tcr_ml/gnn_release/dataset_boltz/${DATASET_NAME}/processed"
 SCORES_DIR="${MODEL_PATH}/${DATASET_NAME}_scores"
 
 # Run test script (with dataset name so scores folder is named correctly)

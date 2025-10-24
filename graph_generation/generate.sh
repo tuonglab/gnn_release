@@ -2,16 +2,16 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=16G
+#SBATCH --mem=24G
 #SBATCH --job-name=edge
-#SBATCH --time=01:50:00
+#SBATCH --time=08:50:00
 #SBATCH --partition=general
 #SBATCH --account=a_kelvin_tuong
 #SBATCH -e pytorch.error
 #SBATCH -o pytorch.out
 
 # Define shared dataset ID
-DATASET_ID="scTRB_predictions"
+DATASET_ID="phs002517_boltz"
 
 # Define base paths
 ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"

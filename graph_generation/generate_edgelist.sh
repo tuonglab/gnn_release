@@ -2,7 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=6G
+#SBATCH --mem=24G
 #SBATCH --job-name=edge_gen
 #SBATCH --time=4:00:00
 #SBATCH --partition=general
@@ -11,12 +11,12 @@
 #SBATCH -o edge_gen.out
 
 # Define shared dataset ID
-DATASET_ID="scTRB_predictions"
+DATASET_ID="tower_predictions"
 
 # Define base paths
 ENV_PATH="/scratch/project/tcr_ml/gnn_env/bin/activate"
 SCRIPT_PATH="/scratch/project/tcr_ml/gnn_release/graph_generation/create_edgelist.py"
-INPUT_BASE="/scratch/project/tcr_ml/boltz1/scTRB"
+INPUT_BASE="/QRISdata/Q7753"
 OUTPUT_BASE="/scratch/project/tcr_ml/gnn_release/dataset_boltz"
 
 # Construct input/output directories using the dataset ID
