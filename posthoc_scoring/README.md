@@ -149,3 +149,25 @@ $$
 | $S, S_{\text{adj}}, S'$ | Intermediate and final adjusted scores |
 | $\mathrm{clip}(\cdot)$ | Truncation to a specified range (e.g. $[0, 1]$) |
 | $\mathbb{I}(\cdot)$ | Indicator function (1 if condition true, else 0) |
+
+## Why We Average in Log-Odds (Not Probabilities)
+
+The final step in our method is to convert the model’s output probabilities into **log-odds space**.  
+We then compute the **average of all logits** in this space and transform the result **back into probability space** using the inverse logit function.
+
+### Why this makes sense
+
+- The final layer of the GNN model, before producing probabilities, is a **classifier layer** that combines learned features in a **linear way**.  
+  This means the model operates additively and symmetrically in the log-odds domain.  
+  Averaging in this space therefore **preserves the underlying geometry** of the model.
+
+- From a **Bayesian perspective**, log-odds represent the **natural scale of evidence** for a binary event.  
+  Each TCR in a sample repertoire can be viewed as an **independent piece of evidence**, and combining these observations through averaging in log-odds space reflects the **additive nature of evidence accumulation**.
+
+- Converting the averaged log-odds back into probability space yields a **coherent, robust, and Bayesian-consistent aggregate probability**.
+
+### Why not just average probabilities?
+
+Because the **sigmoid layer compresses logits** into a bounded range between 0 and 1, taking a simple mean of probabilities would **bias the result toward extreme predictions**.  
+In contrast, averaging in log-odds space avoids this issue because logits are **unbounded real numbers**.  
+This allows the aggregated final score—such as a representative **cancer-risk probability**—to **preserve the true relative differences** in model confidence.
