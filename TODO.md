@@ -4,3 +4,7 @@
 4) modularise code into usable modules
 5) add docstrings into code functions and module
 6) release package
+
+MISC
+
+1) delete test_data_kt, olivia's folder
