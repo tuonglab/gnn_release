@@ -1,7 +1,0 @@
-https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html # torch_geometric==2.5.3
-jupyter
-matplotlib
-seaborn
-networkx
-biopython
-https://pytorch.org/get-started/locally/ # torch==2.3.1+cu121

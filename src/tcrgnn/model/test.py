@@ -12,7 +12,7 @@ from sklearn.metrics import roc_auc_score
 from torch_geometric.loader import DataLoader
 from graph_generation.graph import load_graphs
 
-from train_model import GATv2
+from tcrgnn.model.train_model import GATv2
 
 # Set the random seed for reproducibility
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
