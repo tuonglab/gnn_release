@@ -1,1 +1,0 @@
-/scratch/project/tcr_ml/GLIPH2_PICA_cdr3_outputs
