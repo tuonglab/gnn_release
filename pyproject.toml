@@ -1,0 +1,25 @@
+[project]
+name = "tcrgnn"
+version = "0.1.0"
+description = "GNN TCR Python Package"
+authors = [
+    {name = "Amos Choo", email = "amos.choo@uq.edu.au"},
+]
+dependencies = [
+    "jupyter",
+    "matplotlib",
+    "seaborn",
+    "networkx",
+    "biopython",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true

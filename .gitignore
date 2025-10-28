@@ -23,3 +23,4 @@ model_2025*
 evaluate_uncertainty_isacs_only.py
 dataset_boltz
 models.tar.gz
+.pdm-python
