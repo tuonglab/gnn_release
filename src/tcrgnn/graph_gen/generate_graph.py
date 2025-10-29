@@ -1,16 +1,18 @@
 from pathlib import Path
-from typing import Iterable
+
 import numpy as np
+import pandas as pd
 import torch
 from torch_geometric.data import Data
-import pandas as pd
 
 CANCEROUS = 1
 CONTROL = 0
 
+
 def parse_edges(edge_file: Path) -> list[list[str]]:
     with edge_file.open() as f:
         return [line.strip().split() for line in f if line.strip()]
+
 
 def build_graph_from_edge_txt(
     edge_file: Path,
@@ -37,7 +39,7 @@ def build_graph_from_edge_txt(
     dst = [node_map[(b3, j)] for _, _, b3, j in edgelist]
     # undirected
     src += dst
-    dst += src[:len(dst)]
+    dst += src[: len(dst)]
 
     edge_index = torch.tensor([src, dst], dtype=torch.long)
     x = torch.tensor(

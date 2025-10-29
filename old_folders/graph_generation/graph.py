@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import torch
 from torch_geometric.data import Data, Dataset
-import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -33,7 +32,11 @@ AMINO_ACID_MAPPING = {
     "TYR": "Y",
 }
 # Read the PCA encoding matrix
-PCA_ENCODING = pd.read_csv("/scratch/project/tcr_ml/gnn_release/graph_generation/AAidx_PCA_2024.txt", sep="\t", index_col=0)
+PCA_ENCODING = pd.read_csv(
+    "/scratch/project/tcr_ml/gnn_release/graph_generation/AAidx_PCA_2024.txt",
+    sep="\t",
+    index_col=0,
+)
 
 CANCEROUS = 1
 CONTROL = 0
@@ -63,7 +66,7 @@ class MultiGraphDataset(Dataset):
 
     def __init__(self, root, samples, cancer=False, transform=None, pre_transform=None):
         self.samples = samples
-        self.root = root # root directory of the dataset
+        self.root = root  # root directory of the dataset
         self.cancer = cancer
         super(MultiGraphDataset, self).__init__(root, transform, pre_transform)
 
@@ -142,11 +145,13 @@ class MultiGraphDataset(Dataset):
     def download(self):
         pass  # download raw data here (could be implemented later)
 
-    def create_data_object(self, edge_file, pca_encoding, amino_acid_mapping, label=CANCEROUS):
+    def create_data_object(
+        self, edge_file, pca_encoding, amino_acid_mapping, label=CANCEROUS
+    ):
         if not self.cancer:
             label = CONTROL
 
-        with open(edge_file, "r") as f:
+        with open(edge_file) as f:
             edgelist = [line.strip().split() for line in f]
 
         # Initialize nodes, node_mapping, and original_characters as empty lists and dictionaries
@@ -167,7 +172,9 @@ class MultiGraphDataset(Dataset):
 
         # Reconstruct the sequence based on positions
         sorted_positions = sorted(node_position_dict.keys())
-        reconstructed_sequence = ''.join([node_position_dict[pos] for pos in sorted_positions])
+        reconstructed_sequence = "".join(
+            [node_position_dict[pos] for pos in sorted_positions]
+        )
 
         # Create the source and target node lists
         source_nodes = [node_mapping[(edge[0], edge[1])] for edge in edgelist]
@@ -182,7 +189,9 @@ class MultiGraphDataset(Dataset):
 
         # Create the node feature matrix
         x = torch.tensor(
-            np.array([pca_encoding.loc[amino_acid_mapping[node[0]]].values for node in nodes]),
+            np.array(
+                [pca_encoding.loc[amino_acid_mapping[node[0]]].values for node in nodes]
+            ),
             dtype=torch.float,
         )
 
@@ -199,7 +208,9 @@ class MultiGraphDataset(Dataset):
         return data
 
 
-def draw_graph(data, sequence=None, filename="graph.pdf"):  # Default filename with .pdf extension
+def draw_graph(
+    data, sequence=None, filename="graph.pdf"
+):  # Default filename with .pdf extension
     import matplotlib.pyplot as plt
     import networkx as nx
 
@@ -216,20 +227,30 @@ def draw_graph(data, sequence=None, filename="graph.pdf"):  # Default filename w
 
     # Use spring_layout for better spacing, adjust the k parameter to space out nodes
     pos = nx.spring_layout(G, k=2.5, iterations=150)  # Adjust k for more/less spacing
-    
+
     # Draw the graph with node labels and better spacing
-    nx.draw(G, pos, with_labels=True, labels=labels, node_color='lightblue', node_size=500, font_size=10, edge_color='gray')
+    nx.draw(
+        G,
+        pos,
+        with_labels=True,
+        labels=labels,
+        node_color="lightblue",
+        node_size=500,
+        font_size=10,
+        edge_color="gray",
+    )
 
     # If sequence is provided, add it as a legend
     if sequence:
         legend_label = f"Sequence: {sequence}"
-        plt.legend([legend_label], loc='upper right', fontsize=12, frameon=False)
+        plt.legend([legend_label], loc="upper right", fontsize=12, frameon=False)
 
     # Save the plot to a file in PDF format
-    plt.savefig(filename, format='pdf')  # Save as PDF
+    plt.savefig(filename, format="pdf")  # Save as PDF
     plt.clf()  # Clear the figure to avoid overlapping plots
 
-def load_graphs(file:str):
+
+def load_graphs(file: str):
     """
     Load graphs from a file.
 
@@ -239,5 +260,5 @@ def load_graphs(file:str):
     Returns:
         dataset: The loaded dataset containing the graphs.
     """
-    dataset = torch.load(file,map_location=device)
+    dataset = torch.load(file, map_location=device)
     return dataset

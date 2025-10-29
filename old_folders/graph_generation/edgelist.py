@@ -5,13 +5,11 @@ import os
 import shutil
 import subprocess
 import tarfile
-import tempfile
 import traceback
+from collections.abc import Iterable
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
-from io import StringIO
 from pathlib import Path
-from typing import Iterable, Optional
 
 from Bio.PDB import PDBParser
 from Bio.PDB.PDBExceptions import PDBConstructionException
@@ -22,9 +20,10 @@ LOG = logging.getLogger("tcrgnn.edgegen")
 @dataclass
 class EdgeGenConfig:
     cutoff: float = 8.0
-    tmp_root: Optional[Path] = None   # default to $TMPDIR or /tmp
+    tmp_root: Path | None = None  # default to $TMPDIR or /tmp
     keep_outputs_expanded: bool = False
     patterns: tuple[str, ...] = ("rank_001", "model_0")  # select PDB files
+
 
 def load_pdb_structure(pdb_path: Path):
     parser = PDBParser(QUIET=True)
@@ -35,8 +34,10 @@ def load_pdb_structure(pdb_path: Path):
         logging.error(f"Error parsing PDB file {pdb_path}: {e}")
         return None
 
+
 def atom_for_distance(res):
     return res["CB"] if res.has_id("CB") else res["CA"]
+
 
 def _is_within_directory(base: Path, target: Path) -> bool:
     try:
@@ -53,6 +54,7 @@ def _safe_extract_tar_gz(tar_path: Path, dest: Path) -> None:
             if not _is_within_directory(dest, dest / m.name):
                 raise RuntimeError(f"Blocked path traversal: {m.name}")
         tar.extractall(path=dest)
+
 
 def write_edges_for_pdb(pdb_file: Path, output_dir: Path, cutoff: float) -> None:
     try:
@@ -74,7 +76,9 @@ def write_edges_for_pdb(pdb_file: Path, output_dir: Path, cutoff: float) -> None
                                 a2 = atom_for_distance(r2)
                                 d = a1 - a2
                                 if d <= cutoff:
-                                    f.write(f"{r1.get_resname()} {r1.id[1]} {r2.get_resname()} {r2.id[1]}\n")
+                                    f.write(
+                                        f"{r1.get_resname()} {r1.id[1]} {r2.get_resname()} {r2.id[1]}\n"
+                                    )
                             except KeyError:
                                 continue
     except Exception as e:
@@ -87,11 +91,13 @@ def write_edges_for_pdb(pdb_file: Path, output_dir: Path, cutoff: float) -> None
         LOG.error("Error processing %s: %s", pdb_file, e)
         traceback.print_exc()
 
+
 def _iter_target_pdbs(root: Path, patterns: tuple[str, ...]) -> Iterable[Path]:
     for p in root.rglob("*.pdb"):
         name = p.name
         if any(pat in name for pat in patterns):
             yield p
+
 
 def generate_edges_from_tar(
     tar_file: Path,
@@ -118,7 +124,9 @@ def generate_edges_from_tar(
             pass
 
     tar_output = out_dir.with_suffix(".tar.gz")
-    subprocess.run(["tar", "-czf", str(tar_output), "-C", str(out_dir), "."], check=True)
+    subprocess.run(
+        ["tar", "-czf", str(tar_output), "-C", str(out_dir), "."], check=True
+    )
 
     if not config.keep_outputs_expanded:
         shutil.rmtree(out_dir, ignore_errors=True)

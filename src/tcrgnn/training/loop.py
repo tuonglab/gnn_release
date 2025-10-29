@@ -1,9 +1,12 @@
 from __future__ import annotations
+
+from dataclasses import dataclass
+
 import torch
 from torch_geometric.loader import DataLoader
-from dataclasses import dataclass
-from pathlib import Path
+
 from .config import TrainConfig, TrainPaths
+
 
 @dataclass
 class TrainState:
@@ -11,9 +14,18 @@ class TrainState:
     best_acc: float = 0.0
     patience_count: int = 0
 
-def train(model: torch.nn.Module, samples: list[list[torch.Tensor]], cfg: TrainConfig, paths: TrainPaths, device: torch.device) -> None:
+
+def train(
+    model: torch.nn.Module,
+    samples: list[list[torch.Tensor]],
+    cfg: TrainConfig,
+    paths: TrainPaths,
+    device: torch.device,
+) -> None:
     criterion = torch.nn.BCEWithLogitsLoss()
-    optim = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
+    optim = torch.optim.AdamW(
+        model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay
+    )
 
     # samples is a list of lists of Data objects, keep your batching scheme
     loader = DataLoader(samples, batch_size=cfg.batch_size, shuffle=True)
@@ -42,7 +54,7 @@ def train(model: torch.nn.Module, samples: list[list[torch.Tensor]], cfg: TrainC
 
         avg_loss = total_loss / max(total_samples, 1)
         acc = total_correct / max(total_samples, 1)
-        print(f"epoch={epoch+1} loss={avg_loss:.4f} acc={acc:.4f}")
+        print(f"epoch={epoch + 1} loss={avg_loss:.4f} acc={acc:.4f}")
 
         improved = False
         if avg_loss < state.best_loss - cfg.min_delta_loss:

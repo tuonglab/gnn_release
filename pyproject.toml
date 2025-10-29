@@ -25,3 +25,38 @@ build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+exclude = [
+    "old_folders",
+]
+
+# Enable Ruff formatting (replaces Black)
+[tool.ruff.format]
+quote-style = "double"       # or "single"
+docstring-code-format = true
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # warnings
+    "I",   # import sorting
+    "UP",  # pyupgrade
+    "B",   # bugbear
+    "C4",  # comprehensions
+]
+ignore = [
+    "E501",  # optionally ignore line length if annoying
+]
+fixable = ["ALL"]
+
+
+
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.2",
+    "pre-commit>=4.3.0",
+]

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+
 import numpy as np
 import pandas as pd
 
@@ -22,6 +23,7 @@ DEF_CSCALE_MIN = 0.02
 DEF_CSCALE_MAX = 0.75
 # -------------------------------------------------
 
+
 def solve_shift_for_target(p, base_delta, target_shift, iters=40):
     """
     Find constant s so that mean(clip(p + base_delta + s, 0, 1) - p) ~= target_shift.
@@ -37,15 +39,21 @@ def solve_shift_for_target(p, base_delta, target_shift, iters=40):
             hi = mid
     return 0.5 * (lo + hi)
 
+
 def weighted_mean(x, w):
     num = np.sum(w * x)
     den = np.sum(w) + 1e-12
     return float(num / den)
 
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--csv", default=DEF_CSV, help="Input CSV with columns prob and CloneFreq")
-    ap.add_argument("--target_mean_abs_delta", type=float, default=DEF_TARGET_MEAN_ABS_DELTA)
+    ap.add_argument(
+        "--csv", default=DEF_CSV, help="Input CSV with columns prob and CloneFreq"
+    )
+    ap.add_argument(
+        "--target_mean_abs_delta", type=float, default=DEF_TARGET_MEAN_ABS_DELTA
+    )
     ap.add_argument("--direction_strength", type=float, default=DEF_DIRECTION_STRENGTH)
     ap.add_argument("--gamma", type=float, default=DEF_GAMMA)
     ap.add_argument("--e0", type=float, default=DEF_E0)
@@ -96,7 +104,9 @@ def main():
 
     # Auto scale to hit target mean absolute delta for shape
     den = np.nanmean(np.abs(base_shape)) + 1e-12
-    c_scale = float(np.clip(args.target_mean_abs_delta / den, args.cscale_min, args.cscale_max))
+    c_scale = float(
+        np.clip(args.target_mean_abs_delta / den, args.cscale_min, args.cscale_max)
+    )
     delta_shape = c_scale * base_shape  # zero mean before final shift
 
     # Label free direction based on top vs bottom clonal frequency tails
@@ -111,8 +121,16 @@ def main():
 
     # Weighted means of p in the tails, focusing on confident extreme points
     wgt = g * strength
-    top_mean_p = weighted_mean(p[top_mask], wgt[top_mask]) if np.any(top_mask) else float(np.nanmean(p))
-    bot_mean_p = weighted_mean(p[bot_mask], wgt[bot_mask]) if np.any(bot_mask) else float(np.nanmean(p))
+    top_mean_p = (
+        weighted_mean(p[top_mask], wgt[top_mask])
+        if np.any(top_mask)
+        else float(np.nanmean(p))
+    )
+    bot_mean_p = (
+        weighted_mean(p[bot_mask], wgt[bot_mask])
+        if np.any(bot_mask)
+        else float(np.nanmean(p))
+    )
 
     # Direction signal: positive if top-w has higher p than bottom-w
     # Normalize by 0.5 so it stays in [-1, 1] when p is in [0,1]
@@ -137,7 +155,11 @@ def main():
     # Metrics
     avg_transformed = float(np.nanmean(score))
     achieved_shift = avg_transformed - float(np.nanmean(p))
-    g_min, g_med, g_max = float(np.nanmin(g)), float(np.nanmedian(g)), float(np.nanmax(g))
+    g_min, g_med, g_max = (
+        float(np.nanmin(g)),
+        float(np.nanmedian(g)),
+        float(np.nanmax(g)),
+    )
     clip_up = int(np.sum(raw > 1.0))
     clip_dn = int(np.sum(raw < 0.0))
 
@@ -147,8 +169,16 @@ def main():
     print("gate g stats min/median/max:", g_min, g_med, g_max)
     print("top_mean_p:", top_mean_p, "bot_mean_p:", bot_mean_p)
     print("direction_signal raw:", float(ds_raw), "effective:", float(ds_eff))
-    print("target_shift:", float(target_shift), "achieved_shift:", achieved_shift, "constant s:", float(s))
+    print(
+        "target_shift:",
+        float(target_shift),
+        "achieved_shift:",
+        achieved_shift,
+        "constant s:",
+        float(s),
+    )
     print("clipped up:", clip_up, "clipped down:", clip_dn)
+
 
 if __name__ == "__main__":
     main()

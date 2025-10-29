@@ -1,12 +1,17 @@
 from pathlib import Path
+
+from tcrgnn.utils.device import get_device, set_seed
+
 from tcrgnn import GATv2, TrainConfig, TrainPaths, train
 from tcrgnn.training.data_loading import load_train_data
-from tcrgnn.utils.device import get_device, set_seed
+
 
 def run():
     device = get_device()
     cfg = TrainConfig(epochs=500, batch_size=256, patience=15, seed=111)
-    paths = TrainPaths(model_dir=Path("model_2025_boltz_111"), best_name="best_model.pt")
+    paths = TrainPaths(
+        model_dir=Path("model_2025_boltz_111"), best_name="best_model.pt"
+    )
     set_seed(cfg.seed)
 
     cancer_dirs = [
@@ -23,6 +28,7 @@ def run():
     nfeat = samples[0][0].num_node_features
     model = GATv2(nfeat=nfeat, nhid=375, nclass=2, dropout=0.17).to(device)
     train(model, samples, cfg, paths, device)
+
 
 if __name__ == "__main__":
     run()

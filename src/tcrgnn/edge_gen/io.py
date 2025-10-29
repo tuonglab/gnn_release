@@ -1,8 +1,16 @@
 # io.py
-import os, tarfile, shutil, subprocess, logging
+import logging
+import os
+import shutil
+import subprocess
+import tarfile
 from pathlib import Path
 
+from Bio.PDB import PDBParser
+from Bio.PDB.PDBExceptions import PDBConstructionException
+
 LOG = logging.getLogger("tcrgnn.edgegen.io")
+
 
 def is_within_directory(base: Path, target: Path) -> bool:
     try:
@@ -10,6 +18,7 @@ def is_within_directory(base: Path, target: Path) -> bool:
         return True
     except ValueError:
         return False
+
 
 def safe_extract_tar_gz(tar_path: Path, dest: Path) -> Path:
     dest.mkdir(parents=True, exist_ok=True)
@@ -20,14 +29,30 @@ def safe_extract_tar_gz(tar_path: Path, dest: Path) -> Path:
         tar.extractall(path=dest)
     return dest
 
+
 def make_archive(src_dir: Path, out_tar_gz: Path) -> None:
-    subprocess.run(["tar", "-czf", str(out_tar_gz), "-C", str(src_dir), "."], check=True)
+    subprocess.run(
+        ["tar", "-czf", str(out_tar_gz), "-C", str(src_dir), "."], check=True
+    )
+
 
 def tmp_root() -> Path:
     return Path(os.getenv("TMPDIR", "/tmp")) / "dm"
 
+
 def cleanup(path: Path) -> None:
     shutil.rmtree(path, ignore_errors=True)
 
+
 def iter_target_pdbs(root: Path, patterns: tuple[str, ...]) -> list[Path]:
     return [p for p in root.rglob("*.pdb") if any(pat in p.name for pat in patterns)]
+
+
+def load_pdb_structure(pdb_path: Path):
+    parser = PDBParser(QUIET=True)
+    try:
+        structure = parser.get_structure(pdb_path.stem, str(pdb_path))
+        return structure
+    except PDBConstructionException as e:
+        logging.error(f"Error parsing PDB file {pdb_path}: {e}")
+        return None

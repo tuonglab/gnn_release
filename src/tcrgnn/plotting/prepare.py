@@ -1,12 +1,13 @@
 from __future__ import annotations
+
 import numpy as np
 import pandas as pd
-from typing import Tuple
+
 
 def prepare_labels_and_scores(
     cancer_df: pd.DataFrame,
     control_df: pd.DataFrame,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     cancer_scores = cancer_df["Mean Score"].to_numpy()
     control_scores = control_df["Mean Score"].to_numpy()
 

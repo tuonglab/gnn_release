@@ -1,13 +1,15 @@
-from pathlib import Path
-from .io import read_scores_csv, dataset_name, model_base_dir_from
+from .charts import calculate_roc, plot_boxplot, plot_roc_curve
+from .io import dataset_name, model_base_dir_from, read_scores_csv
 from .prepare import prepare_labels_and_scores
-from .charts import calculate_roc, plot_roc_curve, plot_boxplot
+
 
 def compare_groups(cancer_csv: str, control_csv: str) -> dict:
     cancer_df = read_scores_csv(cancer_csv)
     control_df = read_scores_csv(control_csv)
 
-    scores, labels, cancer_scores, control_scores = prepare_labels_and_scores(cancer_df, control_df)
+    scores, labels, cancer_scores, control_scores = prepare_labels_and_scores(
+        cancer_df, control_df
+    )
     fpr, tpr, roc_auc, thresholds = calculate_roc(scores, labels)
 
     dataset = dataset_name(cancer_csv, control_csv)

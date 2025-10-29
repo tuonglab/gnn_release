@@ -1,7 +1,8 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 # === File paths (update these to your actual locations) ===
 model_a_path = "/scratch/project/tcr_ml/gnn_release/model_2025_hetero_isacs_ccdi/graph_level_uncertainty/uncertainty_graph_level_pica_complete.csv"
@@ -53,7 +54,9 @@ plt.close()
 
 # === Plot 3: Scatter - Mutual Info vs Predicted Prob, colored by correctness ===
 plt.figure(figsize=(10, 6))
-sns.scatterplot(data=df, x="pred_prob_1", y="mutual_info", hue="correct", style="model", alpha=0.6)
+sns.scatterplot(
+    data=df, x="pred_prob_1", y="mutual_info", hue="correct", style="model", alpha=0.6
+)
 plt.title("Epistemic Uncertainty vs Confidence (Colored by Correctness)")
 plt.xlabel("Predicted Probability (Class 1)")
 plt.ylabel("Mutual Information")
@@ -63,7 +66,9 @@ plt.close()
 
 # === Plot 4: Scatter - Aleatoric Variance vs Predicted Prob, colored by correctness ===
 plt.figure(figsize=(10, 6))
-sns.scatterplot(data=df, x="pred_prob_1", y="aleatoric_var", hue="correct", style="model", alpha=0.6)
+sns.scatterplot(
+    data=df, x="pred_prob_1", y="aleatoric_var", hue="correct", style="model", alpha=0.6
+)
 plt.title("Aleatoric Uncertainty vs Confidence (Colored by Correctness)")
 plt.xlabel("Predicted Probability (Class 1)")
 plt.ylabel("Aleatoric Variance")

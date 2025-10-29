@@ -1,13 +1,11 @@
 import os
-import matplotlib.pyplot as plt
+
 import numpy as np
-import pandas as pd
 import torch
 import torch.nn.functional as F
+from graph_generation.graph import load_graphs
 from torch_geometric.loader import DataLoader
 from torch_geometric.nn import GATv2Conv, global_mean_pool
-from graph_generation.graph import load_graphs
-
 
 # Set the random seed for reproducibility
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -133,7 +131,7 @@ def train(
                 total_samples += batch_size
         avg_loss = total_loss / total_samples  # Calculate average loss
         accuracy = total_correct / total_samples  # Calculate accuracy
-        print(f"Epoch: {epoch+1}, Loss: {avg_loss}, Accuracy: {accuracy}")
+        print(f"Epoch: {epoch + 1}, Loss: {avg_loss}, Accuracy: {accuracy}")
 
         min_delta_loss = 0.01
         min_delta_acc = 0.01
@@ -162,6 +160,7 @@ def train(
 
 
 import os
+
 
 def load_train_data(cancer_paths: list, control_paths: list):
     """
@@ -200,14 +199,12 @@ def load_train_data(cancer_paths: list, control_paths: list):
     return training_set
 
 
-
 def main() -> None:
-
     # Specify the directory you want to traverse
     # replace with your directory path
     train_cancer_directories = [
         "/scratch/project/tcr_ml/gnn_release/dataset_boltz/blood_tissue_predictions/processed",
-        '/scratch/project/tcr_ml/gnn_release/dataset_boltz/ccdi_boltz/processed',
+        "/scratch/project/tcr_ml/gnn_release/dataset_boltz/ccdi_boltz/processed",
         "/scratch/project/tcr_ml/gnn_release/dataset_boltz/scTRB_predictions/processed",
         "/scratch/project/tcr_ml/gnn_release/dataset_boltz/tumor_tissue_predictions/processed",
     ]
@@ -221,7 +218,6 @@ def main() -> None:
     ]
 
     train_set = load_train_data(train_cancer_directories, train_control_directories)
-
 
     model = GATv2(
         nfeat=train_set[0][0].num_node_features, nhid=375, nclass=2, dropout=0.17

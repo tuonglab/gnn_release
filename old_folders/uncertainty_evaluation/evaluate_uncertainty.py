@@ -1,21 +1,21 @@
 import os
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
-from torch.nn.functional import softmax
-from scipy.stats import zscore
-from uncertainty_evaluation.train_uncertainity import GATv2Heteroscedastic, device
 from graph_generation.graph import load_graphs
-from pathlib import Path
-
-
-
+from scipy.stats import zscore
+from torch.nn.functional import softmax
+from uncertainty_evaluation.train_uncertainity import GATv2Heteroscedastic, device
 
 MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/uncertainty_evaluation/model_2025_uncertainty_curated/best_model.pt"
+
+
 @torch.no_grad()
 def mc_dropout_predict(model, data, T=20):
     model.train()  # force dropout on
-    probs_list, log_vars_list = [],[]
+    probs_list, log_vars_list = [], []
 
     for _ in range(T):
         logits, log_var = model(data.x, data.edge_index, data.batch)
@@ -30,7 +30,9 @@ def mc_dropout_predict(model, data, T=20):
     mean_log_vars = log_vars_stack.mean(dim=0).squeeze(-1)
 
     entropy = -torch.sum(mean_probs * torch.log(mean_probs + 1e-8), dim=1)
-    expected_entropy = -torch.mean(torch.sum(probs_stack * torch.log(probs_stack + 1e-8), dim=2), dim=0)
+    expected_entropy = -torch.mean(
+        torch.sum(probs_stack * torch.log(probs_stack + 1e-8), dim=2), dim=0
+    )
     mi = entropy - expected_entropy
 
     return mean_probs, mean_log_vars, entropy, mi
@@ -55,25 +57,29 @@ def evaluate_mc_dropout(model, dataset, T=20, return_individual=False):
 
             if return_individual:
                 for i in range(len(entropy)):
-                    per_graph_records.append({
-                        "sample_id": sample_idx,
-                        "graph_idx": graph_idx,
-                        "subgraph_idx": i,
-                        "entropy": entropy[i].item(),
-                        "mutual_info": mi[i].item(),
-                        "aleatoric_var": var[i].item(),
-                        "pred_class": torch.argmax(probs[i]).item(),
-                        "pred_prob_0": probs[i][0].item(),
-                        "pred_prob_1": probs[i][1].item()
-                    })
+                    per_graph_records.append(
+                        {
+                            "sample_id": sample_idx,
+                            "graph_idx": graph_idx,
+                            "subgraph_idx": i,
+                            "entropy": entropy[i].item(),
+                            "mutual_info": mi[i].item(),
+                            "aleatoric_var": var[i].item(),
+                            "pred_class": torch.argmax(probs[i]).item(),
+                            "pred_prob_0": probs[i][0].item(),
+                            "pred_prob_1": probs[i][1].item(),
+                        }
+                    )
 
-        results.append({
-            "sample_id": sample_idx,
-            "mean_entropy": np.mean(entropy_list),
-            "mean_mutual_info": np.mean(mi_list),
-            "mean_aleatoric_var": np.mean(var_list),
-            "num_graphs": len(sample_graphs)
-        })
+        results.append(
+            {
+                "sample_id": sample_idx,
+                "mean_entropy": np.mean(entropy_list),
+                "mean_mutual_info": np.mean(mi_list),
+                "mean_aleatoric_var": np.mean(var_list),
+                "num_graphs": len(sample_graphs),
+            }
+        )
 
     df = pd.DataFrame(results)
     df["z_entropy"] = zscore(df["mean_entropy"])
@@ -94,7 +100,12 @@ def print_uncertainty_summary(df, print_mode="all", show_all_rows=False):
     elif print_mode == "aleatoric":
         columns = ["sample_id", "mean_aleatoric_var"]
     else:
-        columns = ["sample_id", "mean_entropy", "mean_mutual_info", "mean_aleatoric_var"]
+        columns = [
+            "sample_id",
+            "mean_entropy",
+            "mean_mutual_info",
+            "mean_aleatoric_var",
+        ]
 
     if show_all_rows:
         pd.set_option("display.max_rows", None)
@@ -115,28 +126,24 @@ def load_eval_data(path):
 
 
 def main():
-
-
     test_dir = "/scratch/project/tcr_ml/gnn_release/test_data_v2/val_control/processed"
     prefix = "/scratch/project/tcr_ml/gnn_release"
 
     rel_parts = Path(test_dir).relative_to(prefix).parts
     dataset_name = rel_parts[1]  # index 1 is 'd360'
 
-
-
     test_set = load_eval_data(test_dir)
 
     model = GATv2Heteroscedastic(
-        nfeat=test_set[0][0].num_node_features,
-        nhid=375,
-        nclass=2
+        nfeat=test_set[0][0].num_node_features, nhid=375, nclass=2
     ).to(device)
 
     model.load_state_dict(torch.load(MODEL_FILE))
     model.eval()
 
-    results_df, per_graph_df = evaluate_mc_dropout(model, test_set, T=25, return_individual=True)
+    results_df, per_graph_df = evaluate_mc_dropout(
+        model, test_set, T=25, return_individual=True
+    )
 
     # Summary statistics
     print_uncertainty_summary(results_df, print_mode="all")

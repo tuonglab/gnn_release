@@ -1,13 +1,14 @@
 import argparse
-from Bio.PDB import PDBParser
 import glob
-import subprocess
 import os
+import shutil
+import subprocess
 import tarfile
 import traceback
-import shutil
 from concurrent.futures import ThreadPoolExecutor
+
 from alternative_parser import write_edges
+from Bio.PDB import PDBParser
 
 
 def extract_tar_file(tar_file) -> str:
@@ -59,16 +60,17 @@ def process_tar_file(tar_file, output_base_dir) -> None:
         output_base_dir,
         os.path.basename(tar_directory),
     )
-    output_dir += "_edges"  
+    output_dir += "_edges"
     os.makedirs(output_dir, exist_ok=True)
 
     def process_pdb_file(file):
-        if ("rank_001" in file and file.endswith(".pdb")) or  ("model_0" in file and file.endswith(".pdb")):
+        if ("rank_001" in file and file.endswith(".pdb")) or (
+            "model_0" in file and file.endswith(".pdb")
+        ):
             pdb_file = os.path.join(tar_directory, file)
             check_all_distances(pdb_file, output_dir)
         else:
             print(f"Error generating edgelist for file: {pdb_file}")
-
 
     with ThreadPoolExecutor() as executor:
         executor.map(process_pdb_file, extracted_files)
@@ -102,7 +104,9 @@ def check_all_distances(pdb_file, output_dir):
                                 a2 = atom_for_distance(r2)
                                 d = a1 - a2
                                 if d <= 8.0:
-                                    f.write(f"{r1.get_resname()} {r1.id[1]} {r2.get_resname()} {r2.id[1]}\n")
+                                    f.write(
+                                        f"{r1.get_resname()} {r1.id[1]} {r2.get_resname()} {r2.id[1]}\n"
+                                    )
                             except KeyError:
                                 # skip pairs with missing atoms
                                 continue
@@ -114,9 +118,11 @@ def check_all_distances(pdb_file, output_dir):
             print(f"Error processing {pdb_file}: {e} (fallback also failed: {e2})")
             traceback.print_exc()
 
+
 from io import StringIO
-from Bio.PDB import PDBParser
+
 from Bio.PDB.PDBExceptions import PDBConstructionException
+
 
 def sanitize_pdb_text(pdb_text: str) -> str:
     """
@@ -133,6 +139,7 @@ def sanitize_pdb_text(pdb_text: str) -> str:
         out.append(line)
     return "".join(out)
 
+
 def load_structure_sanitized(pdb_path: str):
     """
     Try normal parse. If it fails, read the file, sanitize in memory,
@@ -142,11 +149,12 @@ def load_structure_sanitized(pdb_path: str):
     try:
         return parser.get_structure("protein", pdb_path)
     except (ValueError, PDBConstructionException):
-        with open(pdb_path, "r") as fh:
+        with open(pdb_path) as fh:
             raw = fh.read()
         fixed = sanitize_pdb_text(raw)
         fh_like = StringIO(fixed)
         return parser.get_structure("protein", fh_like)
+
 
 def atom_for_distance(res):
     # Prefer CB when present, fallback to CA
@@ -154,9 +162,17 @@ def atom_for_distance(res):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Process tar files and generate edge lists.")
-    parser.add_argument("--tar-dir", required=True, help="Directory containing the tar files.")
-    parser.add_argument("--output-base-dir", required=True, help="Base directory where the output will be stored.")
+    parser = argparse.ArgumentParser(
+        description="Process tar files and generate edge lists."
+    )
+    parser.add_argument(
+        "--tar-dir", required=True, help="Directory containing the tar files."
+    )
+    parser.add_argument(
+        "--output-base-dir",
+        required=True,
+        help="Base directory where the output will be stored.",
+    )
 
     args = parser.parse_args()
 

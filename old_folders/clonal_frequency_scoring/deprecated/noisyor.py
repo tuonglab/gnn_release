@@ -3,20 +3,23 @@ import pandas as pd
 
 # Settings
 csv_path = "/scratch/project/tcr_ml/gnn_release/clonal_frequency_scoring/20240530_WGS_20240530_sc_PICA0001-PICA0007_PMID_97-101_Pool_3_2_merged.csv"
-method = "softmax"          # "power" or "softmax"
-beta = 0.9                # used if method == "power"
-tau = 1.5                 # used if method == "softmax"
-alpha = 0.6               # noisy OR sensitivity
-gamma = 0.2               # logit bump strength. 0 means off
+method = "softmax"  # "power" or "softmax"
+beta = 0.9  # used if method == "power"
+tau = 1.5  # used if method == "softmax"
+alpha = 0.6  # noisy OR sensitivity
+gamma = 0.2  # logit bump strength. 0 means off
 eps = 1e-12
+
 
 # Math helpers
 def logit(p, eps=1e-12):
     p = np.clip(p, eps, 1 - eps)
     return np.log(p) - np.log(1 - p)
 
+
 def sigmoid(x):
     return 1.0 / (1.0 + np.exp(-x))
+
 
 # Load
 df = pd.read_csv(csv_path)
@@ -67,4 +70,7 @@ df_out["w_norm"] = w_norm
 df_out["a_priority"] = a
 df_out["p_star"] = p_star
 # df_out now contains per sequence fields you can save or inspect
-print("Unweighted mean probability (no transformation, no frequency):", mean_prob_unweighted)
+print(
+    "Unweighted mean probability (no transformation, no frequency):",
+    mean_prob_unweighted,
+)

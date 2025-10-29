@@ -1,6 +1,5 @@
 # Ensure numeric
 import pandas as pd
-import numpy as np
 
 csv_path = "/scratch/project/tcr_ml/gnn_release/icantcrscoring/model_2025_sc_curated/PICA/20240530_WGS_20240530_sc_PICA0001-PICA0007_PMID_97-101_Pool_4_1_merged.csv"
 df = pd.read_csv(csv_path)
@@ -9,7 +8,6 @@ w = df["CloneFreq"].astype(float).to_numpy()
 p = df["prob"].astype(float).to_numpy()
 
 import pandas as pd
-import numpy as np
 from scipy.stats import pearsonr, spearmanr
 
 # Ensure numeric

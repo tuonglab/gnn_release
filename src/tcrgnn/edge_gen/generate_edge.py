@@ -1,9 +1,10 @@
-from io import StringIO
 import logging
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Tuple
+
 from Bio.PDB import PDBParser
 from Bio.PDB.PDBExceptions import PDBConstructionException
+
 
 def load_pdb_structure(pdb_path: Path):
     parser = PDBParser(QUIET=True)
@@ -14,7 +15,10 @@ def load_pdb_structure(pdb_path: Path):
         logging.error(f"Error parsing PDB file {pdb_path}: {e}")
         return None
 
-def residue_pairs_within_cutoff(structure, cutoff: float) -> Iterable[Tuple[str,int,str,int]]:
+
+def residue_pairs_within_cutoff(
+    structure, cutoff: float
+) -> Iterable[tuple[str, int, str, int]]:
     def atom_for_distance(res):
         return res["CB"] if res.has_id("CB") else res["CA"]
 
@@ -29,9 +33,15 @@ def residue_pairs_within_cutoff(structure, cutoff: float) -> Iterable[Tuple[str,
                         a1 = atom_for_distance(r1)
                         a2 = atom_for_distance(r2)
                         if (a1 - a2) <= cutoff:
-                            yield (r1.get_resname(), r1.id[1], r2.get_resname(), r2.id[1])
+                            yield (
+                                r1.get_resname(),
+                                r1.id[1],
+                                r2.get_resname(),
+                                r2.id[1],
+                            )
                     except KeyError:
                         continue
+
 
 def edges_text(structure, cutoff: float) -> str:
     lines = [

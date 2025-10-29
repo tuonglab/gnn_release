@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 # Ensure numeric
 csv_path = "/scratch/project/tcr_ml/gnn_release/clonal_frequency_scoring/20240530_WGS_20240530_sc_PICA0001-PICA0007_PMID_97-101_Pool_3_2_merged.csv"
@@ -29,8 +29,10 @@ df["prob_pct_in_bin"] = df.groupby("freq_bin")["prob"].rank(pct=True)
 n = df["CloneFreq"].to_numpy()
 sA = df["prob_pct_in_bin"].to_numpy()
 
-S_mean_A = np.average(sA, weights=n)                  # frequency-weighted mean of percentiles
-S_any_A  = 1.0 - np.prod((1.0 - sA) ** n)             # independence, probability at least one cancer-like cell
+S_mean_A = np.average(sA, weights=n)  # frequency-weighted mean of percentiles
+S_any_A = 1.0 - np.prod(
+    (1.0 - sA) ** n
+)  # independence, probability at least one cancer-like cell
 
 # -------------------------------
 # Method B: within-bin residuals and z-scores
@@ -52,7 +54,7 @@ df["prob_resid_pct_in_bin"] = df.groupby("freq_bin")["prob_resid"].rank(pct=True
 
 sB = df["prob_resid_pct_in_bin"].to_numpy()
 S_mean_B = np.average(sB, weights=n)
-S_any_B  = 1.0 - np.prod((1.0 - sB) ** n)
+S_any_B = 1.0 - np.prod((1.0 - sB) ** n)
 
 # -------------------------------
 # Quick summaries

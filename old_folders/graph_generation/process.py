@@ -1,13 +1,23 @@
-import os
 import argparse
+import os
+
 from graph import MultiGraphDataset
+
 
 def main():
     # Set up argument parsing
     parser = argparse.ArgumentParser(description="Process GNN dataset.")
-    parser.add_argument("--root-dir", required=True, help="Root directory where the data should be stored.")
-    parser.add_argument("--directory", required=True, help="Directory containing the .tar.gz files.")
-    parser.add_argument("--cancer", action="store_true", help="Flag to indicate cancer data processing.") # will not be used if predicitng completely unknown data
+    parser.add_argument(
+        "--root-dir",
+        required=True,
+        help="Root directory where the data should be stored.",
+    )
+    parser.add_argument(
+        "--directory", required=True, help="Directory containing the .tar.gz files."
+    )
+    parser.add_argument(
+        "--cancer", action="store_true", help="Flag to indicate cancer data processing."
+    )  # will not be used if predicitng completely unknown data
 
     args = parser.parse_args()
 
@@ -45,6 +55,7 @@ def main():
         os.remove(pre_filter_path)
     if os.path.exists(pre_transform_path):
         os.remove(pre_transform_path)
+
 
 if __name__ == "__main__":
     main()

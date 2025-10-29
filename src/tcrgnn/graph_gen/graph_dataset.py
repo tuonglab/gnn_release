@@ -1,11 +1,14 @@
 from __future__ import annotations
+
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
-import tarfile
+
 import torch
 from torch_geometric.data import Dataset
-from .io import temp_workspace, safe_extract_tar_gz, list_edge_txts, cleanup
-from .generate_graph import build_graph_from_edge_txt, CANCEROUS, CONTROL
+
+from .generate_graph import CANCEROUS, CONTROL, build_graph_from_edge_txt
+from .io import cleanup, list_edge_txts, safe_extract_tar_gz, temp_workspace
+
 
 class MultiGraphDataset(Dataset):
     def __init__(
@@ -33,13 +36,14 @@ class MultiGraphDataset(Dataset):
     @property
     def processed_file_names(self):
         # one .pt per raw tar
-        return [Path(s).with_suffix("").with_suffix("").name + ".pt"
-                if str(s).endswith(".tar.gz")
-                else Path(s).with_suffix(".pt").name
-                for s in self.samples]
+        return [
+            Path(s).with_suffix("").with_suffix("").name + ".pt"
+            if str(s).endswith(".tar.gz")
+            else Path(s).with_suffix(".pt").name
+            for s in self.samples
+        ]
 
     def process(self):
-        import pandas as pd
         from .encodings import load_pca_encoding
 
         processed_dir = Path(self.root) / "processed"
@@ -50,9 +54,11 @@ class MultiGraphDataset(Dataset):
 
         for raw_path in self.raw_paths:
             raw = Path(raw_path)
-            out_pt = processed_dir / (raw.with_suffix("").with_suffix("").name + ".pt"
-                                      if str(raw).endswith(".tar.gz")
-                                      else raw.with_suffix(".pt").name)
+            out_pt = processed_dir / (
+                raw.with_suffix("").with_suffix("").name + ".pt"
+                if str(raw).endswith(".tar.gz")
+                else raw.with_suffix(".pt").name
+            )
 
             work = temp_workspace("edge_")
             try:

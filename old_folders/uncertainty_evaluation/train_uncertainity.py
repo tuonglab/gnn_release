@@ -1,14 +1,13 @@
-
 import os
+import sys
+
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch_geometric.loader import DataLoader
 from torch_geometric.nn import GATv2Conv, global_mean_pool
 
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from graph_generation.graph import load_graphs
 
@@ -43,7 +42,7 @@ class GATv2Heteroscedastic(torch.nn.Module):
 
 def heteroscedastic_bce_loss(logits, log_var, labels):
     out_1 = logits[:, 1]
-    bce = F.binary_cross_entropy_with_logits(out_1, labels.float(), reduction='none')
+    bce = F.binary_cross_entropy_with_logits(out_1, labels.float(), reduction="none")
     # log_var = torch.clamp(log_var, min=-10.0, max=10.0)
     precision = torch.exp(-log_var.squeeze(-1))
     loss = 0.5 * precision * bce + 0.5 * log_var.squeeze(-1)
@@ -79,7 +78,7 @@ def train_hetero(model, loader, num_epochs=100, patience=15):
 
         avg_loss = total_loss / total_samples
         accuracy = total_correct / total_samples
-        print(f"[Epoch {epoch+1}] Loss: {avg_loss:.5f}, Acc: {accuracy:.5f}")
+        print(f"[Epoch {epoch + 1}] Loss: {avg_loss:.5f}, Acc: {accuracy:.5f}")
 
         min_delta_loss = 0.02
         min_delta_acc = 0.01
@@ -124,8 +123,7 @@ def main():
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue/processed",
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/scTRB/processed",
         "/scratch/project/tcr_ml/gnn_release/dataset_v2/tumor_tissue/processed",
-        "/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed"
-
+        "/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed",
     ]
     train_control_directories = [
         # "/scratch/project/tcr_ml/gnn_release/dataset_v2/control+pica/processed",
@@ -141,7 +139,7 @@ def main():
         nhid=375,
         nclass=2,
         dropout=0.17,
-        temperature=1.0
+        temperature=1.0,
     ).to(device)
 
     train_loader = DataLoader(train_set, batch_size=256, shuffle=True)

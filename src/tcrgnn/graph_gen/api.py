@@ -1,10 +1,16 @@
+import logging
+import os
+import shutil
+import tarfile
+import tempfile
 from pathlib import Path
-import os, tarfile, shutil, logging, tempfile
 
 LOG = logging.getLogger(__name__)
 
+
 def is_tar_gz(p: Path) -> bool:
     return p.suffixes[-2:] == [".tar", ".gz"]
+
 
 def safe_extract_tar_gz(tar_path: Path, dest: Path) -> Path:
     dest.mkdir(parents=True, exist_ok=True)
@@ -16,11 +22,14 @@ def safe_extract_tar_gz(tar_path: Path, dest: Path) -> Path:
         tar.extractall(path=dest)
     return dest
 
+
 def list_edge_txts(root: Path) -> list[Path]:
-    return sorted([p for p in root.rglob("*.txt")])
+    return sorted([p for p in root.rglob("*.txt")])  # noqa
+
 
 def temp_workspace(prefix: str = "edge_") -> Path:
     return Path(tempfile.mkdtemp(prefix=prefix, dir=os.getenv("TMPDIR", None)))
+
 
 def cleanup(path: Path) -> None:
     shutil.rmtree(path, ignore_errors=True)

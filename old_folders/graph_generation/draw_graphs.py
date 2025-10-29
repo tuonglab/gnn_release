@@ -1,18 +1,16 @@
-from graph import load_graphs, draw_graph
+from graph import load_graphs
 
 # Path to the .pt file
 file_path = "/scratch/project/tcr_ml/gnn_release/test_data_v2/20241106_WGS_20241106_sc_PICA0033-PICA0069_Pool_6/processed/20241106_WGS_20241106_sc_PICA0033-PICA0069_Pool_6_2_cdr3_results_edges.tar.pt"
 
 # file_path = "/scratch/project/tcr_ml/gnn_release/test_data_v2/seekgene_boltz/processed/boltz_results_S1_edges.tar.pt"
 # Target sequences you're interested in
-target_sequences = {
-    "CASSQEDRRVDEQYF"
-}
+target_sequences = {"CASSQEDRRVDEQYF"}
 
 # Load graphs once
 graphs = load_graphs(file_path)
 for i, graph in enumerate(graphs):
-    if not hasattr(graph, 'x'):
+    if not hasattr(graph, "x"):
         print(f"Graph {i} has no 'x' attribute.")
     elif graph.x is None:
         print(f"Graph {i} has 'x' = None.")

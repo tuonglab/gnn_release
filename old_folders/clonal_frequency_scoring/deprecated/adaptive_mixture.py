@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 eps = 1e-12
 
 
@@ -9,17 +10,23 @@ mean_prob_unweighted = df["prob"].astype(float).mean()
 
 w = df["CloneFreq"].astype(float).to_numpy()
 p = df["prob"].astype(float).to_numpy()
+
+
 def logit(p):
     p = np.clip(p, eps, 1 - eps)
     return np.log(p) - np.log(1 - p)
 
+
 def sigmoid(x):
     return 1.0 / (1.0 + np.exp(-x))
 
+
 def _normalize_w(w):
     w = np.clip(np.asarray(w, float), 0.0, None)
-    if np.all(w == 0): w = np.ones_like(w)
+    if np.all(w == 0):
+        w = np.ones_like(w)
     return w / (w.sum() + eps)
+
 
 def _mixture_score(w_norm, p, beta=1.3, gamma=1.0, T=None, a_cap=None):
     p = np.clip(np.asarray(p, float), 0.0, 1.0)
@@ -30,13 +37,14 @@ def _mixture_score(w_norm, p, beta=1.3, gamma=1.0, T=None, a_cap=None):
         a = np.minimum(a, a_cap)
     a = a / (a.sum() + eps)
     p_gamma = np.power(p, gamma)
-    tilde = (a * p_gamma)
+    tilde = a * p_gamma
     tilde = tilde / (tilde.sum() + eps)
     return float(np.sum(tilde * p))
 
-def _mixture_below_mean_soft(w_norm, p,
-                             beta=1.1, eta=0.6, hinge=0.0,
-                             lambda_uniform=0.02, a_cap=0.01):
+
+def _mixture_below_mean_soft(
+    w_norm, p, beta=1.1, eta=0.6, hinge=0.0, lambda_uniform=0.02, a_cap=0.01
+):
     p = np.clip(np.asarray(p, float), 0.0, 1.0)
     n = len(p)
     a = np.power(w_norm + eps, beta)
@@ -46,28 +54,33 @@ def _mixture_below_mean_soft(w_norm, p,
     mu = float(np.mean(p))
     deficit = np.maximum(mu - p - hinge, 0.0) ** eta
     numer = a * deficit + lambda_uniform * (1.0 / n)
-    if np.all(numer == 0): numer = np.ones_like(p)
+    if np.all(numer == 0):
+        numer = np.ones_like(p)
     tilde = numer / (numer.sum() + eps)
     return float(np.sum(tilde * p))
 
-import numpy as np
 
 eps = 1e-12
 
-import numpy as np
 
 eps = 1e-12
+
 
 def adaptive_mixture(
-    w, p,
-    tau_pos=0.02, tau_neg=0.02,    # switching thresholds
-    shrink_lambda=0.10,            # reduce extreme clonality
-    boost_beta=1.4, boost_T=2.0,   # gentle boost
-    drop_beta=1.1, drop_eta=0.6,   # gentle drop
-    a_cap=0.01,                    # max 1 percent priority per clone
-    clamp_abs=0.08, clamp_rel=0.25,
-    mu_high=0.60,                  # e.g. 0.60, force boost if mu >= mu_high
-    mu_drop_max=0.55               # e.g. 0.55, only allow drop if mu <= mu_drop_max
+    w,
+    p,
+    tau_pos=0.02,
+    tau_neg=0.02,  # switching thresholds
+    shrink_lambda=0.10,  # reduce extreme clonality
+    boost_beta=1.4,
+    boost_T=2.0,  # gentle boost
+    drop_beta=1.1,
+    drop_eta=0.6,  # gentle drop
+    a_cap=0.01,  # max 1 percent priority per clone
+    clamp_abs=0.08,
+    clamp_rel=0.25,
+    mu_high=0.60,  # e.g. 0.60, force boost if mu >= mu_high
+    mu_drop_max=0.55,  # e.g. 0.55, only allow drop if mu <= mu_drop_max
 ):
     """
     Returns dict:
@@ -80,7 +93,8 @@ def adaptive_mixture(
     """
     # normalize and gently shrink clonality
     w = np.clip(np.asarray(w, float), 0.0, None)
-    if np.all(w == 0): w = np.ones_like(w)
+    if np.all(w == 0):
+        w = np.ones_like(w)
     w_norm = w / (w.sum() + eps)
     if shrink_lambda > 0:
         n = len(w_norm)
@@ -88,8 +102,8 @@ def adaptive_mixture(
 
     # probabilities
     p = np.clip(np.asarray(p, float), 0.0, 1.0)
-    mu = float(np.mean(p))                                  # unweighted mean
-    S_old = float(np.sum(w_norm * p))                       # frequency-weighted mean
+    mu = float(np.mean(p))  # unweighted mean
+    S_old = float(np.sum(w_norm * p))  # frequency-weighted mean
     gap = S_old - mu
 
     # clamp bounds around mu
@@ -113,12 +127,19 @@ def adaptive_mixture(
 
     # compute raw new score by branch
     if regime == "boost":
-        S_new_raw = _mixture_score(w_norm, p, beta=boost_beta, gamma=1.0, T=boost_T, a_cap=a_cap)
+        S_new_raw = _mixture_score(
+            w_norm, p, beta=boost_beta, gamma=1.0, T=boost_T, a_cap=a_cap
+        )
         S_new = float(np.clip(S_new_raw, mu, upper_bound))
     elif regime == "drop":
         S_new_raw = _mixture_below_mean_soft(
-            w_norm, p, beta=drop_beta, eta=drop_eta, hinge=0.0,
-            lambda_uniform=0.02, a_cap=a_cap
+            w_norm,
+            p,
+            beta=drop_beta,
+            eta=drop_eta,
+            hinge=0.0,
+            lambda_uniform=0.02,
+            a_cap=a_cap,
         )
         S_new = float(np.clip(S_new_raw, lower_bound, mu))
     else:
@@ -138,8 +159,8 @@ def adaptive_mixture(
             "tau_pos": tau_pos,
             "tau_neg": tau_neg,
             "mu_high": mu_high,
-            "mu_drop_max": mu_drop_max
-        }
+            "mu_drop_max": mu_drop_max,
+        },
     }
 
 

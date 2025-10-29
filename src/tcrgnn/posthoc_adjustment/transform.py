@@ -2,6 +2,7 @@ import numpy as np
 
 # ----------------------------- Utilities -------------------------------- #
 
+
 def _apply_open_interval(arr, open_interval: bool, eps: float):
     if not open_interval:
         return arr
@@ -9,6 +10,7 @@ def _apply_open_interval(arr, open_interval: bool, eps: float):
     out[out <= 0.0] = eps
     out[out >= 1.0] = 1.0 - eps
     return out
+
 
 def _plotting_position(ranks, m, method: str):
     if method == "weibull":
@@ -18,10 +20,11 @@ def _plotting_position(ranks, m, method: str):
     if method == "blom":
         return (ranks - 0.375) / (m + 0.25)
     if method == "bernard":
-        return (ranks - 3.0/8.0) / (m + 0.25)
+        return (ranks - 3.0 / 8.0) / (m + 0.25)
     if method == "rank":
         return np.full(m, 0.5) if m == 1 else (ranks - 1.0) / (m - 1.0)
     raise ValueError(f"Unknown method '{method}'")
+
 
 def _midranks_for_ties(sorted_vals_len: int, diffs: np.ndarray):
     # diffs is np.diff of sorted values
@@ -33,20 +36,22 @@ def _midranks_for_ties(sorted_vals_len: int, diffs: np.ndarray):
     starts = np.r_[0, boundaries + 1]
     stops = np.r_[boundaries, m - 1]
     ranks = np.empty(m, dtype=float)
-    for s, e in zip(starts, stops):
+    for s, e in zip(starts, stops):  # noqa: B905
         mid = (s + e) / 2.0
-        ranks[s:e+1] = mid + 1.0
+        ranks[s : e + 1] = mid + 1.0
     return ranks
 
+
 # ----------------------------- Main API ---------------------------------- #
+
 
 def fraction_to_percentile(
     x,
     weights=None,
-    method="hazen",          # "weibull", "hazen", "blom", "bernard", "rank"
-    open_interval=False,     # map [0,1] to (eps,1-eps) if True
+    method="hazen",  # "weibull", "hazen", "blom", "bernard", "rank"
+    open_interval=False,  # map [0,1] to (eps,1-eps) if True
     eps=1e-9,
-    nan_policy="omit"        # "omit", "propagate", "raise"
+    nan_policy="omit",  # "omit", "propagate", "raise"
 ):
     """
     Percentile transform via ECDF with optional weights and plotting positions.
@@ -120,6 +125,7 @@ def fraction_to_percentile(
     out[valid] = p_sorted[inv]
     return _apply_open_interval(out, open_interval, eps)
 
+
 def sample_skewness(x):
     """
     Compute the Fisher-Pearson sample skewness of a 1D array.
@@ -138,7 +144,10 @@ def sample_skewness(x):
 
     return np.mean((x - mu) ** 3) / s**3
 
-def combined_score_distribution_aware_simple(P, skew_strength=0.1, clip_strength=0.2, floor=0.0, ceil=1.0):
+
+def combined_score_distribution_aware_simple(
+    P, skew_strength=0.1, clip_strength=0.2, floor=0.0, ceil=1.0
+):
     """Shift scores based on distribution skew (right-skew → down, left-skew → up)."""
     import numpy as np
     from scipy.stats import skew
@@ -148,7 +157,9 @@ def combined_score_distribution_aware_simple(P, skew_strength=0.1, clip_strength
     return np.clip(P + adj, floor, ceil)
 
 
-def combined_score_sample_blend(P, F_raw, high_P=0.9, high_F=0.9, alpha=0.6, beta=0.8, gamma=0.5):
+def combined_score_sample_blend(
+    P, F_raw, high_P=0.9, high_F=0.9, alpha=0.6, beta=0.8, gamma=0.5
+):
     """Blend scores P and frequencies F_raw using high-confidence weighting."""
     import numpy as np
 
@@ -162,4 +173,3 @@ def combined_score_sample_blend(P, F_raw, high_P=0.9, high_F=0.9, alpha=0.6, bet
 
     S_adj = P + alpha * A_high - beta * A_low
     return np.clip((1 - gamma) * P + gamma * S_adj, 0, 1)
-

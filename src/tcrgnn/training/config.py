@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from pathlib import Path
+
 
 @dataclass
 class TrainPaths:
@@ -11,6 +13,7 @@ class TrainPaths:
     def best_path(self) -> Path:
         self.model_dir.mkdir(parents=True, exist_ok=True)
         return self.model_dir / self.best_name
+
 
 @dataclass
 class TrainConfig:

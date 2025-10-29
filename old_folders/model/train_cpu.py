@@ -1,12 +1,11 @@
 import os
-import matplotlib.pyplot as plt
+
 import numpy as np
-import pandas as pd
 import torch
 import torch.nn.functional as F
+from graph_generation.graph import load_graphs
 from torch_geometric.loader import DataLoader
 from torch_geometric.nn import GATv2Conv, global_mean_pool
-from graph_generation.graph import load_graphs
 
 # Set the random seed for reproducibility
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -86,7 +85,7 @@ def train(
 
         avg_loss = total_loss / total_samples
         accuracy = total_correct / total_samples
-        print(f"Epoch: {epoch+1}, Loss: {avg_loss}, Accuracy: {accuracy}")
+        print(f"Epoch: {epoch + 1}, Loss: {avg_loss}, Accuracy: {accuracy}")
 
         min_delta_loss = 0.02
         min_delta_acc = 0.01
@@ -112,7 +111,6 @@ def train(
                 f"Early stopping due to no improvement in loss or accuracy after {patience} epochs"
             )
             break
-
 
 
 def load_train_data(cancer_paths: list, control_paths: list):

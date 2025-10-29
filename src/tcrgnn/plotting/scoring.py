@@ -9,7 +9,8 @@ from scipy.special import kl_div
 from sklearn.metrics import roc_auc_score, roc_curve
 
 # Set global font size smaller for plots
-plt.rcParams['font.size'] = 24  # General font size for the plot
+plt.rcParams["font.size"] = 24  # General font size for the plot
+
 
 def process_scores(directory: str) -> None:
     cancer_scores = []
@@ -38,7 +39,7 @@ def process_scores(directory: str) -> None:
                     usecols=1,
                     dtype=float,
                     encoding="utf-8",
-                    invalid_raise=False
+                    invalid_raise=False,
                 )
                 scores = scores[~np.isnan(scores)]
                 normalised_scores = scores / np.sum(scores)
@@ -51,11 +52,20 @@ def process_scores(directory: str) -> None:
                 normalized_kl_divergence = np.exp(-overall_kl_divergence)
 
                 hellinger_score = 1 - np.sqrt(
-                    0.5 * np.sum((np.sqrt(normalised_scores) - np.sqrt(normalised_perfect_scores)) ** 2)
+                    0.5
+                    * np.sum(
+                        (
+                            np.sqrt(normalised_scores)
+                            - np.sqrt(normalised_perfect_scores)
+                        )
+                        ** 2
+                    )
                 )
 
                 cosine_similarity = 1 - cosine(scores, perfect_scores)
-                tvd = 1 - (0.5 * np.sum(np.abs(normalised_scores - normalised_perfect_scores)))
+                tvd = 1 - (
+                    0.5 * np.sum(np.abs(normalised_scores - normalised_perfect_scores))
+                )
 
                 scores_list = [
                     filename,
@@ -73,13 +83,15 @@ def process_scores(directory: str) -> None:
                     control_scores.append(scores_list[1:])
 
     plt.figure(figsize=(10, 8))
-    for i, metric in enumerate([
-        "Normalized KL Divergence",
-        "Hellinger Distance",
-        "Cosine Similarity",
-        "Mean Scores",
-        "Total Variation Distance",
-    ]):
+    for i, metric in enumerate(
+        [
+            "Normalized KL Divergence",
+            "Hellinger Distance",
+            "Cosine Similarity",
+            "Mean Scores",
+            "Total Variation Distance",
+        ]
+    ):
         y_true = [1] * len(cancer_scores) + [0] * len(control_scores)
         y_scores = [score[i] for score in cancer_scores + control_scores]
         auc_score = roc_auc_score(y_true, y_scores)
@@ -93,11 +105,16 @@ def process_scores(directory: str) -> None:
     plt.ylabel("True Positive Rate")
     plt.title("Cancer vs Control Samples (Hyperparameter Optimised Model)")
     plt.legend(loc="lower right", fontsize=14)
-    plt.savefig(f"{directory}/combined_roc_curves.pdf", format="pdf", bbox_inches="tight")
+    plt.savefig(
+        f"{directory}/combined_roc_curves.pdf", format="pdf", bbox_inches="tight"
+    )
     plt.show()
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process score files and generate ROC plots.")
+    parser = argparse.ArgumentParser(
+        description="Process score files and generate ROC plots."
+    )
     parser.add_argument(
         "--directory",
         type=str,

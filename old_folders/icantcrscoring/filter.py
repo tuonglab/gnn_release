@@ -1,8 +1,8 @@
-import pandas as pd
-import numpy as np
 import math
-from pathlib import Path
 import re
+from pathlib import Path
+
+import pandas as pd
 
 
 def process_sequences(df_freq, df_prob, top_n=50, threshold=0.6):
@@ -15,23 +15,25 @@ def process_sequences(df_freq, df_prob, top_n=50, threshold=0.6):
     weight_score = math.sqrt(1 - math.exp(-S))
     return weight_score, high_idx, df
 
-def process_sequences(df_freq, df_prob, threshold=0.6, output_csv="sequence_scores.csv"):
+
+def process_sequences(
+    df_freq, df_prob, threshold=0.6, output_csv="sequence_scores.csv"
+):
     df = pd.merge(df_freq, df_prob, on="AA_seq", how="inner")
     df = df.sort_values("CloneFreq", ascending=False)
     df["high"] = df["prob"] > threshold
-    
+
     # Calculate individual row scores
     df["transformed_score"] = df["prob"] * df["CloneFreq"]
-    
+
     high_idx = df.index[df["high"]].tolist()
     S = df["transformed_score"].sum()
     weight_score = math.sqrt(1 - math.exp(-S))
-    
+
     # Export to CSV
     df.to_csv(output_csv, index=False)
-    
-    return weight_score, high_idx, df
 
+    return weight_score, high_idx, df
 
 
 def batch_process(seq_dir, prob_dir, output_dir, top_n=50, threshold=0.6):
@@ -84,7 +86,8 @@ def batch_process(seq_dir, prob_dir, output_dir, top_n=50, threshold=0.6):
         #     df_freq, df_prob, top_n, threshold
         # )
         weight_score, high_idx, df_merged = process_sequences(
-            df_freq, df_prob,
+            df_freq,
+            df_prob,
         )
 
         out_csv = output_dir / f"{prefix}_merged.csv"

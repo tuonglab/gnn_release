@@ -1,10 +1,12 @@
 import os
-import numpy as np
+
 import matplotlib
+import numpy as np
+
 matplotlib.use("pdf")  # Use PDF backend for vector output
 import matplotlib.pyplot as plt
-from Bio.PDB import PDBParser
 import networkx as nx
+from Bio.PDB import PDBParser
 
 # Set global font to be Illustrator-compatible
 plt.rcParams["pdf.fonttype"] = 42  # Use TrueType fonts
@@ -18,12 +20,28 @@ RASTERIZED = False  # Control rasterization of imshow
 
 # 3-letter to 1-letter amino acid mapping
 three_to_one = {
-    'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D',
-    'CYS': 'C', 'GLN': 'Q', 'GLU': 'E', 'GLY': 'G',
-    'HIS': 'H', 'ILE': 'I', 'LEU': 'L', 'LYS': 'K',
-    'MET': 'M', 'PHE': 'F', 'PRO': 'P', 'SER': 'S',
-    'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V'
+    "ALA": "A",
+    "ARG": "R",
+    "ASN": "N",
+    "ASP": "D",
+    "CYS": "C",
+    "GLN": "Q",
+    "GLU": "E",
+    "GLY": "G",
+    "HIS": "H",
+    "ILE": "I",
+    "LEU": "L",
+    "LYS": "K",
+    "MET": "M",
+    "PHE": "F",
+    "PRO": "P",
+    "SER": "S",
+    "THR": "T",
+    "TRP": "W",
+    "TYR": "Y",
+    "VAL": "V",
 }
+
 
 def get_cb_or_ca_coordinates(structure):
     coords = []
@@ -42,6 +60,7 @@ def get_cb_or_ca_coordinates(structure):
                     labels.append(three_to_one.get(residue.get_resname(), "X"))
     return np.array(coords), labels
 
+
 def generate_contact_matrix(pdb_path):
     parser = PDBParser(QUIET=True)
     structure = parser.get_structure("model", pdb_path)
@@ -56,6 +75,7 @@ def generate_contact_matrix(pdb_path):
 
     return contact_matrix, labels
 
+
 def compute_contact_frequency(pdb_paths):
     parser = PDBParser(QUIET=True)
     all_contact_matrices = []
@@ -69,7 +89,10 @@ def compute_contact_frequency(pdb_paths):
 
         for i in range(n):
             for j in range(n):
-                if i != j and np.linalg.norm(coords[i] - coords[j]) <= DISTANCE_THRESHOLD:
+                if (
+                    i != j
+                    and np.linalg.norm(coords[i] - coords[j]) <= DISTANCE_THRESHOLD
+                ):
                     contact_matrix[i, j] = 1
 
         all_contact_matrices.append(contact_matrix)
@@ -79,7 +102,10 @@ def compute_contact_frequency(pdb_paths):
     contact_freq_matrix = np.sum(all_contact_matrices, axis=0)
     return contact_freq_matrix, reference_labels
 
-def draw_consensus_graph(contact_freq_matrix, labels, num_models, threshold=0.9, output_path=None):
+
+def draw_consensus_graph(
+    contact_freq_matrix, labels, num_models, threshold=0.9, output_path=None
+):
     G = nx.Graph()
     n = len(labels)
 
@@ -103,7 +129,7 @@ def draw_consensus_graph(contact_freq_matrix, labels, num_models, threshold=0.9,
     nx.draw_networkx_edges(G, pos, width=1.5, edge_color="gray")
     nx.draw_networkx_labels(G, pos, labels={i: labels[i] for i in G.nodes}, font_size=8)
 
-    plt.title(f"Consensus Contact Graph Boltz Structure")
+    plt.title("Consensus Contact Graph Boltz Structure")
     plt.axis("off")
     plt.tight_layout()
 
@@ -153,7 +179,9 @@ if __name__ == "__main__":
     contact_freq_matrix, freq_labels = compute_contact_frequency(full_paths)
 
     plt.figure(figsize=(8, 6))
-    plt.imshow(contact_freq_matrix, cmap="viridis", interpolation="none", rasterized=RASTERIZED)
+    plt.imshow(
+        contact_freq_matrix, cmap="viridis", interpolation="none", rasterized=RASTERIZED
+    )
     plt.xticks(range(len(freq_labels)), freq_labels, fontsize=8, rotation=90)
     plt.yticks(range(len(freq_labels)), freq_labels, fontsize=8)
     plt.colorbar(label="Number of Models with Contact")
@@ -165,5 +193,10 @@ if __name__ == "__main__":
     print(f"Contact frequency heatmap saved to {FREQ_OUTPUT_FILE}")
 
     # === Draw consensus contact graph ===
-    draw_consensus_graph(contact_freq_matrix, freq_labels, num_models=len(full_paths),
-                         threshold=0.9, output_path="consensus_contact_graph.pdf")
+    draw_consensus_graph(
+        contact_freq_matrix,
+        freq_labels,
+        num_models=len(full_paths),
+        threshold=0.9,
+        output_path="consensus_contact_graph.pdf",
+    )
