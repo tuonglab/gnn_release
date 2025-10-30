@@ -76,7 +76,7 @@ def _assemble_graph(
     return Data(x=x, edge_index=edge_index, y=y, original_characters=seq)
 
 
-def build_batch_graph_from_edgelist(
+def build_graph_from_edgelist(
     edgelist: list[tuple[str, str, str, str]],
     pca_encoding: pd.DataFrame,
     aa_map: dict[str, str],
@@ -101,36 +101,5 @@ def build_batch_graph_from_edgelist(
     torch_geometric.data.Data
         A graph object with node features from pca_encoding.
     """
-    nodes, node_map, pos_to_char, edge_pairs = _index_nodes_and_edges(edgelist, aa_map)
-    return _assemble_graph(nodes, edge_pairs, pca_encoding, aa_map, pos_to_char, label)
-
-
-def build_graph_from_edge_tuple(
-    edge: tuple[str, str, str, str],
-    pca_encoding: pd.DataFrame,
-    aa_map: dict[str, str],
-    label: int,
-) -> Data:
-    """
-    Build a PyTorch Geometric graph from a single edge tuple.
-
-    Parameters
-    ----------
-    edge : tuple[str, str, str, str]
-        Single edge as (a3, i_str, b3, j_str).
-    pca_encoding : pandas.DataFrame
-        DataFrame indexed by single letter amino acids with PCA feature columns.
-    aa_map : dict[str, str]
-        Mapping from three letter codes to single letter amino acids.
-    label : int
-        Integer class label.
-
-    Returns
-    -------
-    torch_geometric.data.Data
-        A graph object containing two nodes and one undirected edge.
-    """
-    # Reuse the same indexing pipeline on a one-edge edgelist
-    edgelist = [edge]
     nodes, node_map, pos_to_char, edge_pairs = _index_nodes_and_edges(edgelist, aa_map)
     return _assemble_graph(nodes, edge_pairs, pca_encoding, aa_map, pos_to_char, label)
