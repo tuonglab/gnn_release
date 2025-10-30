@@ -6,11 +6,41 @@ from pathlib import Path
 import torch
 from torch_geometric.data import Dataset
 
+from ._io import cleanup, list_edge_txts, safe_extract_tar_gz, temp_workspace
 from .generate_graph import CANCEROUS, CONTROL, build_graph_from_edge_txt
-from .io import cleanup, list_edge_txts, safe_extract_tar_gz, temp_workspace
 
 
 class MultiGraphDataset(Dataset):
+    """
+    A dataset for loading and processing sets of graph samples from edge list files.
+
+    This dataset consumes raw files that describe edges for one or more graphs.
+    Raw inputs may be provided either as individual text files or as compressed
+    `.tar.gz` archives containing multiple edge list files. Each raw file is
+    converted into one or more PyTorch Geometric data objects using a helper
+    function that constructs graph structures with PCA encoded amino acid
+    features.
+
+    Parameters
+    ----------
+    root : str or pathlib.Path
+        Root directory used by PyTorch Geometric for raw and processed data
+        management.
+    samples : Sequence[str or pathlib.Path]
+        Paths to raw edge text files or `.tar.gz` archives that contain edge
+        text files.
+    cancer : bool, optional
+        If True, the generated graphs are labeled as cancerous. Defaults to False.
+    pca_path : str or pathlib.Path
+        Path to a PCA encoding table used to embed amino acids.
+    aa_map : dict[str, str]
+        Mapping from three letter amino acid codes to single letter codes.
+    transform : callable, optional
+        Optional transform applied on each sample when loaded.
+    pre_transform : callable, optional
+        Optional preprocessing transform applied before saving processed files.
+    """
+
     def __init__(
         self,
         root: str | Path,
@@ -31,11 +61,32 @@ class MultiGraphDataset(Dataset):
 
     @property
     def raw_file_names(self):
+        """
+        List of expected raw filenames.
+
+        These correspond to the names of input edge text files or compressed
+        archives without paths.
+
+        Returns
+        -------
+        list[str]
+            Raw filenames expected by PyTorch Geometric.
+        """
         return [Path(s).name for s in self.samples]
 
     @property
     def processed_file_names(self):
-        # one .pt per raw tar
+        """
+        List of expected processed filenames.
+
+        Each raw file results in a corresponding `.pt` file. Compressed archives
+        are normalized by removing both `.gz` and `.tar` suffixes.
+
+        Returns
+        -------
+        list[str]
+            Filenames of processed graph objects.
+        """
         return [
             Path(s).with_suffix("").with_suffix("").name + ".pt"
             if str(s).endswith(".tar.gz")
@@ -44,6 +95,19 @@ class MultiGraphDataset(Dataset):
         ]
 
     def process(self):
+        """
+        Process raw edge text files into PyTorch Geometric graph objects.
+
+        For each input sample, this method:
+        1. Extracts edge list text files if the sample is a `.tar.gz` archive.
+        2. Loads PCA encoding features for amino acids.
+        3. Builds graph objects by parsing edges and applying amino acid encodings.
+        4. Saves the resulting graph objects to `.pt` files under the
+           `processed` directory.
+
+        Temporary directories created during extraction are cleaned up
+        regardless of success or error.
+        """
         from .encodings import load_pca_encoding
 
         processed_dir = Path(self.root) / "processed"
@@ -78,7 +142,28 @@ class MultiGraphDataset(Dataset):
                 cleanup(work)
 
     def len(self):
+        """
+        Return the number of processed graph files in the dataset.
+
+        Returns
+        -------
+        int
+            Number of processed items.
+        """
         return len(self.processed_paths)
 
     def get(self, idx):
+        """
+        Load and return the processed graph objects at the given index.
+
+        Parameters
+        ----------
+        idx : int
+            Index of the processed file to load.
+
+        Returns
+        -------
+        list[torch_geometric.data.Data]
+            A list of graph objects created from the original edge files.
+        """
         return torch.load(self.processed_paths[idx])
