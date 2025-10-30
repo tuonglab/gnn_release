@@ -94,6 +94,19 @@ def residue_pairs_within_cutoff(
 
 
 def alternate_parser(pdb_file, output_dir):
+    """Generate a residue edge list from a PDB file by measuring distances between CB atoms.
+
+    This function iterates over ATOM records in the provided PDB file, selects the CB atom for each residue
+    (or the CA atom when the residue is glycine), and writes every pair of residues within 8 Å of each other
+    to an edge list text file in the specified output directory.
+
+    Args:
+        pdb_file (str | os.PathLike): Path to the input PDB structure containing ATOM records.
+        output_dir (str | os.PathLike): Directory where the generated edge list file will be created.
+
+    Side Effects:
+        Creates a ``*_edge.txt`` file alongside the input structure containing residue-residue contacts.
+    """
     # residue_idx → { resname: str, coord: (x,y,z) }
     residues = OrderedDict()
 
