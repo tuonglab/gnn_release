@@ -4,7 +4,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 
-from generate_edge import edges_text, load_pdb_structure
+from .generate_edge import edges_text, load_pdb_structure
 
 LOG = logging.getLogger("tcrgnn.edgegen")
 
