@@ -6,7 +6,9 @@ from pathlib import Path
 import torch
 from torch_geometric.data import Dataset
 
-from ._io import cleanup, list_edge_txts, safe_extract_tar_gz, temp_workspace
+from tcrgnn.graph_gen._io import list_edge_txts
+from tcrgnn.utils._common_utils import cleanup, safe_extract_tar_gz, tmp_root
+
 from .generate_graph import CANCEROUS, CONTROL, build_graph_from_edge_txt
 
 
@@ -124,7 +126,7 @@ class MultiGraphDataset(Dataset):
                 else raw.with_suffix(".pt").name
             )
 
-            work = temp_workspace("edge_")
+            work = tmp_root() / "edge_"
             try:
                 edge_files: list[Path] = []
                 if str(raw).endswith(".tar.gz"):
