@@ -6,10 +6,13 @@ from pathlib import Path
 import torch
 from torch_geometric.data import Dataset
 
-from tcrgnn.graph_gen._io import list_edge_txts
+from tcrgnn.graph_gen._io import list_edge_txts, parse_edges
 from tcrgnn.utils._common_utils import cleanup, safe_extract_tar_gz, tmp_root
 
-from .build_graph import CANCEROUS, CONTROL, build_graph_from_edge_txt
+from .build_graph import build_graph_from_edgelist
+
+CANCEROUS = 1
+CONTROL = 0
 
 
 class MultiGraphDataset(Dataset):
@@ -136,7 +139,9 @@ class MultiGraphDataset(Dataset):
                     edge_files = [raw]
 
                 objs = [
-                    build_graph_from_edge_txt(p, pca, self.aa_map, label=label)
+                    build_graph_from_edgelist(
+                        parse_edges(p), pca, self.aa_map, label=label
+                    )
                     for p in edge_files
                 ]
                 torch.save(objs, out_pt)
