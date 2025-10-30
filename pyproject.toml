@@ -2,9 +2,7 @@
 name = "tcrgnn"
 version = "0.1.0"
 description = "GNN TCR Python Package"
-authors = [
-    {name = "Amos Choo", email = "amos.choo@uq.edu.au"},
-]
+authors = [{ name = "Amos Choo", email = "amos.choo@uq.edu.au" }]
 dependencies = [
     "torch_geometric==2.5.3",
     "jupyter",
@@ -15,7 +13,7 @@ dependencies = [
 ]
 requires-python = ">=3.11"
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 
 [build-system]
 requires = ["pdm-backend"]
@@ -28,9 +26,7 @@ distribution = true
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-exclude = [
-    "old_folders",
-]
+exclude = ["old_folders"]
 
 # Enable Ruff formatting (replaces Black)
 [tool.ruff.format]
@@ -38,16 +34,16 @@ quote-style = "double"       # or "single"
 docstring-code-format = true
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "W",   # warnings
-    "I",   # import sorting
-    "UP",  # pyupgrade
-    "B",   # bugbear
-    "C4",  # comprehensions
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "W",  # warnings
+    "I",  # import sorting
+    "UP", # pyupgrade
+    "B",  # bugbear
+    "C4", # comprehensions
 ]
 ignore = [
-    "E501",  # optionally ignore line length if annoying
+    "E501", # optionally ignore line length if annoying
 ]
 fixable = ["ALL"]
 
@@ -56,18 +52,18 @@ fixable = ["ALL"]
 minversion = "8.0"
 testpaths = ["tests"]
 addopts = [
-#   "-ra",                 # extra summary
-  "--strict-markers",
-  "--strict-config",
-  "--maxfail=1",
-#   "--cov=tcrgnn",
-#   "--cov-report=term-missing"
+    "-ra",                       # extra summary
+    "--strict-markers",
+    "--strict-config",
+    "--maxfail=1",
+    "--cov=tcrgnn",
+    "--cov-report=term-missing",
 ]
 
 markers = [
-  "gpu: tests that require CUDA",
-  "slow: long running tests",
-  "integration: integration tests that touch disk or multiple modules"
+    "gpu: tests that require CUDA",
+    "slow: long running tests",
+    "integration: integration tests that touch disk or multiple modules",
 ]
 
 

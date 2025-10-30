@@ -1,9 +1,9 @@
 # io.py
 import logging
-import os
 import shutil
 import subprocess
 import tarfile
+import tempfile
 from pathlib import Path
 
 from Bio.PDB import PDBParser
@@ -37,7 +37,7 @@ def make_archive(src_dir: Path, out_tar_gz: Path) -> None:
 
 
 def tmp_root() -> Path:
-    return Path(os.getenv("TMPDIR", "/tmp")) / "dm"
+    return Path(tempfile.gettempdir()) / "dm"
 
 
 def cleanup(path: Path) -> None:

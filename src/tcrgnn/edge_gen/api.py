@@ -3,7 +3,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import io as fio
+from . import _io as fio
 from . import processing as proc
 
 LOG = logging.getLogger("tcrgnn.edgegen")
