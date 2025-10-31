@@ -119,7 +119,7 @@ def test_load_train_data_traverses_dirs_and_appends_graph_lists(monkeypatch, tmp
 
     monkeypatch.setattr(os, "listdir", fake_listdir)
     monkeypatch.setattr(os.path, "isdir", lambda d: Path(d).is_dir())
-    monkeypatch.setattr("tcrgnn.training.data_loading.load_graphs", fake_load_graphs)
+    monkeypatch.setattr("tcrgnn.utils.data_loading.load_graphs", fake_load_graphs)
 
     out = load_train_data([str(cancer_dir)], [str(control_dir)])
 
@@ -147,7 +147,7 @@ def test_load_train_data_skips_non_dirs(monkeypatch, tmp_path):
 
     # Real is dir, not_a_dir is not
     monkeypatch.setattr(os.path, "isdir", lambda d: Path(d).is_dir())
-    monkeypatch.setattr("tcrgnn.training.data_loading.load_graphs", fake_load_graphs)
+    monkeypatch.setattr("tcrgnn.utils.data_loading.load_graphs", fake_load_graphs)
 
     out = load_train_data([str(real_dir), str(not_a_dir)], [str(not_a_dir)])
 
