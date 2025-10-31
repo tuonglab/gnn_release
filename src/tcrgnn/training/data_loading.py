@@ -5,12 +5,18 @@ import os
 import torch
 
 
-# keep your existing loader signature
 def load_graphs(file: str):
-    # local import to avoid hard coupling if user moves modules
-    from graph_generation.graph import load_graphs as _load
+    """
+    Load graphs from a file.
 
-    return _load(file)
+    Args:
+        file (str): The path to the file containing the graphs.
+
+    Returns:
+        dataset: The loaded dataset containing the graphs.
+    """
+    dataset = torch.load(file, map_location=torch.device)
+    return dataset
 
 
 def load_train_data(
