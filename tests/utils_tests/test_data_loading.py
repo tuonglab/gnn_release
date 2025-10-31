@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from tcrgnn.training.data_loading import load_train_data
+from tcrgnn.utils.data_loading import load_train_data
 
 try:
     from torch_geometric.data import Data
@@ -14,7 +14,7 @@ try:
 except Exception:
     HAS_PYG = False
 
-from tcrgnn.training.data_loading import load_graphs
+from tcrgnn.utils.data_loading import load_graphs
 
 
 @pytest.mark.parametrize("use_path_obj", [False, True])

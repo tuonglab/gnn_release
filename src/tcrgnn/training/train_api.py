@@ -4,8 +4,8 @@ import torch
 
 from tcrgnn.models.gatv2 import GATv2
 
+from ..utils.data_loading import load_train_data
 from .config import TrainConfig, TrainPaths
-from .data_loading import load_train_data
 from .loop import train
 
 

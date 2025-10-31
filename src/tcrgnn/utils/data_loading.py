@@ -39,3 +39,13 @@ def load_train_data(
                 training_set.append(graphs)
 
     return training_set
+
+
+def load_test_file(file_path: str) -> tuple[str, Any]:
+    file_path = file_path
+
+    if os.path.isfile(file_path):
+        graphs = load_graphs(file_path)
+        return graphs
+
+    raise FileNotFoundError(f"Test file not found: {file_path}")
