@@ -1,22 +1,24 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
+from typing import Any
 
 import torch
 
 
-def load_graphs(file: str):
+def load_graphs(file: str | Path, map_location: str | torch.device = "cpu") -> Any:
     """
     Load graphs from a file.
 
     Args:
-        file (str): The path to the file containing the graphs.
+        file: Path to the file containing the graphs.
+        map_location: Passed to torch.load. Default "cpu".
 
     Returns:
-        dataset: The loaded dataset containing the graphs.
+        The loaded dataset.
     """
-    dataset = torch.load(file, map_location=torch.device)
-    return dataset
+    return torch.load(str(file), map_location=map_location)
 
 
 def load_train_data(

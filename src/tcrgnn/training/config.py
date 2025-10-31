@@ -6,8 +6,12 @@ from pathlib import Path
 
 @dataclass
 class TrainPaths:
-    model_dir: Path = Path("model")
-    best_name: str = "best_model.pt"
+    model_dir: Path | str
+    best_name: str
+
+    def __post_init__(self):
+        if not isinstance(self.model_dir, Path):
+            self.model_dir = Path(self.model_dir)
 
     @property
     def best_path(self) -> Path:

@@ -2,9 +2,92 @@
 import os
 from pathlib import Path
 
+import pytest
 import torch
 
 from tcrgnn.training.data_loading import load_train_data
+
+try:
+    from torch_geometric.data import Data
+
+    HAS_PYG = True
+except Exception:
+    HAS_PYG = False
+
+from tcrgnn.training.data_loading import load_graphs
+
+
+@pytest.mark.parametrize("use_path_obj", [False, True])
+def test_load_graphs_roundtrip(tmp_path, use_path_obj):
+    if HAS_PYG:
+        ds = [
+            Data(
+                x=torch.randn(4, 3),
+                edge_index=torch.tensor([[0, 1], [1, 2]]),
+                y=torch.tensor([1]),
+            ),
+            Data(
+                x=torch.randn(2, 3),
+                edge_index=torch.tensor([[0, 0], [1, 1]]),
+                y=torch.tensor([0]),
+            ),
+        ]
+    else:
+        ds = {"a": torch.randn(3), "b": torch.tensor([1, 2, 3])}
+
+    path = tmp_path / "graphs.pt"
+    torch.save(ds, path)
+
+    arg = path if use_path_obj else str(path)
+    out = load_graphs(arg)  # default map_location is "cpu"
+
+    assert type(out) is type(ds)
+    if HAS_PYG and isinstance(ds, list):
+        assert len(out) == len(ds)
+        for go, gr in zip(out, ds, strict=False):
+            assert torch.allclose(go.x, gr.x)
+            assert torch.equal(go.edge_index, gr.edge_index)
+            assert torch.equal(go.y, gr.y)
+    else:
+        assert out.keys() == ds.keys()
+        for k in ds:
+            assert torch.equal(out[k], ds[k])
+
+
+def test_load_graphs_missing_file_raises(tmp_path):
+    missing = tmp_path / "nope.pt"
+    with pytest.raises(FileNotFoundError):
+        load_graphs(str(missing))
+
+
+@pytest.mark.parametrize("ml", ["cpu", torch.device("cpu")])
+def test_load_graphs_passes_map_location(monkeypatch, tmp_path, ml):
+    obj = {"v": torch.tensor([1])}
+    path = tmp_path / "graphs.pt"
+    torch.save(obj, path)
+
+    called = {}
+
+    real_load = torch.load
+
+    def spy_load(file, map_location=None):
+        called["file"] = file
+        called["map_location"] = map_location
+        return real_load(file, map_location=map_location)
+
+    monkeypatch.setattr(torch, "load", spy_load)
+
+    out = load_graphs(path, map_location=ml)
+    assert out["v"].equal(obj["v"])
+    assert Path(called["file"]) == path
+    # normalize to device string for assertion
+    ml_str = ml if isinstance(ml, str) else ml.type
+    called_str = (
+        called["map_location"]
+        if isinstance(called["map_location"], str)
+        else getattr(called["map_location"], "type", None)
+    )
+    assert called_str == ml_str
 
 
 def test_load_train_data_traverses_dirs_and_appends_graph_lists(monkeypatch, tmp_path):

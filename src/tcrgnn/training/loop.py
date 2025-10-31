@@ -19,7 +19,7 @@ def train(
     model: torch.nn.Module,
     samples: list[list[torch.Tensor]],
     cfg: TrainConfig,
-    paths: TrainPaths,
+    save_path: TrainPaths,
     device: torch.device,
 ) -> None:
     criterion = torch.nn.BCEWithLogitsLoss()
@@ -66,7 +66,7 @@ def train(
 
         if improved:
             state.patience_count = 0
-            torch.save(model.state_dict(), paths.best_path)
+            torch.save(model.state_dict(), save_path.best_path)
         else:
             state.patience_count += 1
             if state.patience_count >= cfg.patience:
