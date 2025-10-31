@@ -6,7 +6,7 @@ from pathlib import Path
 
 @dataclass
 class TrainPaths:
-    model_dir: Path = Path("model_2025_boltz_111")
+    model_dir: Path = Path("model")
     best_name: str = "best_model.pt"
 
     @property
