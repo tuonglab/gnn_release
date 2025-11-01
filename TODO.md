@@ -8,3 +8,4 @@
 MISC
 
 1) delete test_data_kt, olivia's folder
+2) check model logit loss formulation
