@@ -126,25 +126,6 @@ def _fraction_to_percentile(
     return _apply_open_interval(out, open_interval, eps)
 
 
-def _sample_skewness(x):
-    """
-    Compute the Fisher-Pearson sample skewness of a 1D array.
-    Returns 0.0 if fewer than 3 elements or zero variance.
-    """
-    import numpy as np
-
-    x = np.asarray(x, dtype=float)
-    if x.size < 3:
-        return 0.0
-
-    mu = x.mean()
-    s = x.std(ddof=0)
-    if s == 0:
-        return 0.0
-
-    return np.mean((x - mu) ** 3) / s**3
-
-
 def combined_score_distribution_aware_simple(
     P, skew_strength=0.1, clip_strength=0.2, floor=0.0, ceil=1.0
 ):
