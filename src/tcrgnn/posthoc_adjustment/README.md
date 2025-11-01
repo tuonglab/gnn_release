@@ -1,3 +1,8 @@
+# Posthoc Scores Calibration
+
+- require clonal frequency in your data
+- can be precalculated before passing in, or can be calculated on the fly
+
 ### **Overall Idea**
 The process begins with a list of T-cell receptor (TCR) sequences.  
 Each sequence includes:  

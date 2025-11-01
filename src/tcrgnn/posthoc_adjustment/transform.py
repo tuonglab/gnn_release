@@ -45,7 +45,7 @@ def _midranks_for_ties(sorted_vals_len: int, diffs: np.ndarray):
 # ----------------------------- Main API ---------------------------------- #
 
 
-def fraction_to_percentile(
+def _fraction_to_percentile(
     x,
     weights=None,
     method="hazen",  # "weibull", "hazen", "blom", "bernard", "rank"
@@ -126,7 +126,7 @@ def fraction_to_percentile(
     return _apply_open_interval(out, open_interval, eps)
 
 
-def sample_skewness(x):
+def _sample_skewness(x):
     """
     Compute the Fisher-Pearson sample skewness of a 1D array.
     Returns 0.0 if fewer than 3 elements or zero variance.
@@ -164,7 +164,7 @@ def combined_score_sample_blend(
     import numpy as np
 
     P = np.clip(P, 0, 1)
-    R = fraction_to_percentile(F_raw)
+    R = _fraction_to_percentile(F_raw)
     mask_high = (P > high_P) & (R > high_F)
     mask_low = (P < 1 - high_P) & (R < 1 - high_F)
 
