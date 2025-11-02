@@ -83,7 +83,7 @@ def test_train_model_calls_pipeline_with_expected_args(monkeypatch, tmp_path, ca
 
     # Train should receive our exact train set object and expected args
     assert train_calls["train_set"] is fake_train_set
-    assert train_calls["num_epochs"] == 500
+    assert train_calls["num_epochs"] == cfg.epochs
     assert train_calls["cfg"] is cfg
     assert train_calls["save_path"] is save_path
 

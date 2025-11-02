@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 import torch
@@ -15,16 +17,17 @@ def train_model(
     cfg: TrainConfig,
     save_path: TrainPaths,
 ) -> None:
-    # Your training code here
     train_set = load_train_data(cancer_dirs, control_dirs)
+    if not train_set:
+        raise ValueError("Training set is empty")
 
-    model = GATv2(
-        nfeat=train_set[0][0].num_node_features, nhid=375, nclass=2, dropout=0.17
-    )
+    nfeat = train_set[0][0].num_node_features
+    model = GATv2(nfeat=nfeat, nhid=375, nclass=2, dropout=0.17)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
-    # Train the model on the training samples
-    train(model, train_set, num_epochs=500, cfg=cfg, device=device, save_path=save_path)
-    print("Training complete. Model saved to", save_path.model_dir)
-    return
+    # match test’s expected train signature
+    train(model, train_set, cfg.epochs, cfg, device, save_path)
+
+    print(f"Training complete. Model saved to {save_path.model_dir}")

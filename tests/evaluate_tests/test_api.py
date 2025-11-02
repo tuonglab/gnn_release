@@ -47,7 +47,7 @@ def test_evaluate_predicts_on_unwrapped_batch(monkeypatch):
     assert result == sample_scores
     mock_gat.assert_called_once_with(nfeat=42, nhid=375, nclass=2, dropout=0.17)
     mock_load_trained.assert_called_once_with("base_model", "model.pt", mock_device)
-    mock_make_loader.assert_called_once_with(test_data, batch_size=1, shuffle=False)
+    mock_make_loader.assert_called_once_with(test_data)
     mock_predict.assert_called_once_with(mock_trained_model, sample_graphs, mock_device)
 
 

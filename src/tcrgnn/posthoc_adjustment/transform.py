@@ -1,9 +1,24 @@
+from __future__ import annotations
+
 import numpy as np
 
 # ----------------------------- Utilities -------------------------------- #
 
 
-def _apply_open_interval(arr, open_interval: bool, eps: float):
+def _apply_open_interval(
+    arr: np.ndarray, open_interval: bool, eps: float
+) -> np.ndarray:
+    """
+    Optionally map values from the closed interval [0, 1] into the open interval (eps, 1 - eps).
+
+    Args:
+        arr: Array of values assumed to be within [0, 1].
+        open_interval: If True, clamp endpoints away from 0 and 1 by eps.
+        eps: Small positive value used for endpoint clamping.
+
+    Returns:
+        Array with endpoints adjusted when open_interval is True, else the original array.
+    """
     if not open_interval:
         return arr
     out = arr.copy()
@@ -12,7 +27,28 @@ def _apply_open_interval(arr, open_interval: bool, eps: float):
     return out
 
 
-def _plotting_position(ranks, m, method: str):
+def _plotting_position(ranks: np.ndarray, m: int, method: str) -> np.ndarray:
+    """
+    Compute plotting positions from ranks using a chosen formula.
+
+    Supported methods:
+        - "weibull": ranks / (m + 1)
+        - "hazen": (ranks - 0.5) / m
+        - "blom": (ranks - 0.375) / (m + 0.25)
+        - "bernard": (ranks - 3/8) / (m + 0.25)
+        - "rank": 0.5 if m == 1 else (ranks - 1) / (m - 1)
+
+    Args:
+        ranks: Rank values in 1..m as floats.
+        m: Sample size.
+        method: Name of the plotting position method.
+
+    Returns:
+        Plotting positions in [0, 1].
+
+    Raises:
+        ValueError: If an unknown method is provided.
+    """
     if method == "weibull":
         return ranks / (m + 1.0)
     if method == "hazen":
@@ -26,9 +62,17 @@ def _plotting_position(ranks, m, method: str):
     raise ValueError(f"Unknown method '{method}'")
 
 
-def _midranks_for_ties(sorted_vals_len: int, diffs: np.ndarray):
-    # diffs is np.diff of sorted values
-    # build tie groups, assign midranks in 1..m
+def _midranks_for_ties(sorted_vals_len: int, diffs: np.ndarray) -> np.ndarray:
+    """
+    Assign midranks in 1..m for a sorted array with ties.
+
+    Args:
+        sorted_vals_len: Length m of the sorted array.
+        diffs: np.diff of the sorted values, used to detect tie boundaries.
+
+    Returns:
+        Array of midranks as floats, length m.
+    """
     m = sorted_vals_len
     if m == 0:
         return np.empty(0, dtype=float)
@@ -46,20 +90,37 @@ def _midranks_for_ties(sorted_vals_len: int, diffs: np.ndarray):
 
 
 def _fraction_to_percentile(
-    x,
-    weights=None,
-    method="hazen",  # "weibull", "hazen", "blom", "bernard", "rank"
-    open_interval=False,  # map [0,1] to (eps,1-eps) if True
-    eps=1e-9,
-    nan_policy="omit",  # "omit", "propagate", "raise"
-):
+    x: np.ndarray | list[float],
+    weights: np.ndarray | list[float] | None = None,
+    method: str = "hazen",  # "weibull", "hazen", "blom", "bernard", "rank"
+    open_interval: bool = False,  # map [0, 1] to (eps, 1 - eps) if True
+    eps: float = 1e-9,
+    nan_policy: str = "omit",  # "omit", "propagate", "raise"
+) -> np.ndarray:
     """
     Percentile transform via ECDF with optional weights and plotting positions.
 
-    Unweighted case uses chosen plotting position with midranks for ties.
-    Weighted case uses midpoint-of-jump ECDF which is method-free.
+    Unweighted case:
+        Uses the chosen plotting position formula on midranks that account for ties.
 
-    Returns array of percentiles aligned with x.
+    Weighted case:
+        Uses midpoint-of-jump ECDF at unique values, which is method free.
+
+    NaN handling:
+        - "omit": drop NaNs then write NaN back to their original positions
+        - "propagate": return an array of NaNs
+        - "raise": raise ValueError when NaNs are present
+
+    Args:
+        x: Values to transform.
+        weights: Optional nonnegative weights aligned to x.
+        method: Plotting position formula for the unweighted case.
+        open_interval: If True, map endpoints away from 0 and 1 by eps.
+        eps: Small constant used when open_interval is True.
+        nan_policy: Policy for handling NaNs.
+
+    Returns:
+        Array of percentiles in [0, 1] aligned with x.
     """
     x = np.asarray(x, dtype=float)
     n = x.size
@@ -127,30 +188,78 @@ def _fraction_to_percentile(
 
 
 def combined_score_distribution_aware_simple(
-    P, skew_strength=0.1, clip_strength=0.2, floor=0.0, ceil=1.0
-):
-    """Shift scores based on distribution skew (right-skew → down, left-skew → up)."""
+    P: np.ndarray | list[float],
+    skew_strength: float = 0.1,
+    clip_strength: float = 0.2,
+    floor: float = 0.0,
+    ceil: float = 1.0,
+) -> np.ndarray:
+    """
+    Shift scores based on global distribution skew.
+
+    Right skew decreases scores, left skew increases scores. The adjustment
+    is bounded by clip_strength using a tanh squashing of the skew.
+
+    Args:
+        P: Scores in [0, 1] or array like convertible to float array.
+        skew_strength: Sensitivity to skew magnitude.
+        clip_strength: Maximum absolute adjustment size.
+        floor: Lower bound of the returned scores.
+        ceil: Upper bound of the returned scores.
+
+    Returns:
+        Adjusted scores clipped to [floor, ceil].
+    """
     import numpy as np
     from scipy.stats import skew
 
-    P = np.clip(P, 0, 1)
+    P = np.asarray(P, dtype=float)
+    P = np.clip(P, 0.0, 1.0)
     adj = -np.tanh(skew(P) * skew_strength) * clip_strength
     return np.clip(P + adj, floor, ceil)
 
 
 def combined_score_sample_blend(
-    P, F_raw, high_P=0.9, high_F=0.9, alpha=0.6, beta=0.8, gamma=0.5
-):
-    """Blend scores P and frequencies F_raw using high-confidence weighting."""
+    P: np.ndarray | list[float],
+    F_raw: np.ndarray | list[float],
+    high_P: float = 0.9,
+    high_F: float = 0.9,
+    alpha: float = 0.6,
+    beta: float = 0.8,
+    gamma: float = 0.5,
+) -> np.ndarray:
+    """
+    Blend per item model scores with sample level frequency ranks.
+
+    The frequency vector F_raw is turned into within sample percentiles R in [0, 1].
+    Items that are simultaneously high in both P and R get boosted while items that
+    are simultaneously low get penalized. The effect is mixed back with weight gamma.
+
+    Args:
+        P: Model scores in [0, 1] or array like.
+        F_raw: Raw counts or frequencies aligned to P.
+        high_P: Threshold for high model confidence.
+        high_F: Threshold for high frequency percentile.
+        alpha: Boost coefficient for high high items.
+        beta: Penalty coefficient for low low items.
+        gamma: Mixing weight between original P and adjusted S_adj.
+
+    Returns:
+        Blended scores in [0, 1].
+    """
     import numpy as np
 
-    P = np.clip(P, 0, 1)
+    P = np.asarray(P, dtype=float)
+    F_raw = np.asarray(F_raw, dtype=float)
+
+    P = np.clip(P, 0.0, 1.0)
     R = _fraction_to_percentile(F_raw)
+
     mask_high = (P > high_P) & (R > high_F)
-    mask_low = (P < 1 - high_P) & (R < 1 - high_F)
+    mask_low = (P < 1.0 - high_P) & (R < 1.0 - high_F)
 
     A_high = np.minimum(P, R) * mask_high
-    A_low = np.minimum(1 - P, 1 - R) * mask_low
+    A_low = np.minimum(1.0 - P, 1.0 - R) * mask_low
 
     S_adj = P + alpha * A_high - beta * A_low
-    return np.clip((1 - gamma) * P + gamma * S_adj, 0, 1)
+    return np.clip((1.0 - gamma) * P + gamma * S_adj, 0.0, 1.0)
