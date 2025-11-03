@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from tcrgnn.posthoc_adjustment.transform import (
+from tcrgnn.posthoc_adjustment._transform import (
     _fraction_to_percentile,
     _midranks_for_ties,
     _plotting_position,

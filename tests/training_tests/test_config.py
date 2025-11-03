@@ -1,7 +1,7 @@
 # test_train_config.py
 import pytest
 
-from tcrgnn.training.config import TrainConfig, TrainPaths  # update import path
+from tcrgnn.training._config import TrainConfig, TrainPaths  # update import path
 
 
 def test_trainpaths_best_path_creates_dir_and_returns_path(tmp_path):

@@ -1,6 +1,6 @@
 import pytest
 
-from tcrgnn.posthoc_adjustment.clonal_frequency import add_row_frequencies
+from tcrgnn.posthoc_adjustment._clonal_frequency import add_row_frequencies
 
 
 def test_add_row_frequencies_computes_expected_values(tmp_path):

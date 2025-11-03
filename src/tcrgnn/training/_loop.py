@@ -7,7 +7,7 @@ import torch
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 
-from .config import TrainConfig, TrainPaths
+from ._config import TrainConfig, TrainPaths
 
 
 @dataclass

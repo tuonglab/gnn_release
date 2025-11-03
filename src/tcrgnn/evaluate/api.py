@@ -2,8 +2,8 @@ from collections.abc import Iterable
 
 import torch
 
-from tcrgnn.evaluate.predict import predict_on_graph_list
-from tcrgnn.evaluate.utils import (
+from tcrgnn.evaluate._predict import predict_on_graph_list
+from tcrgnn.evaluate._utils import (
     get_device,
     load_trained_model,
     make_loader,
@@ -11,11 +11,11 @@ from tcrgnn.evaluate.utils import (
 from tcrgnn.models.gatv2 import GATv2
 
 
-def evaluate(
+def evaluate_model(
     model_file: str,
     test_data,
     device: torch.device | None = None,
-) -> tuple[list[float], list[int]]:
+) -> list[float]:
     """
     Evaluate a single sample composed of a list of graphs.
 
@@ -30,7 +30,7 @@ def evaluate(
         device: Optional device override. Uses CUDA if available, else CPU.
 
     Returns:
-        tuple[list[float], list[int]]: Per graph scores and predicted labels.
+        list[float]: Per graph scores
     """
     # Infer feature dimension from the first graph of the first sample
     nfeat = test_data[0][0].num_node_features
@@ -49,7 +49,7 @@ def evaluate(
     try:
         batch = next(iter(loader))
     except StopIteration:
-        return [], []
+        return []
 
     # Unwrap if DataLoader returned a single element inside a list or tuple
     sample_graphs: Iterable = (

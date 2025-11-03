@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 import torch
 
-import tcrgnn.evaluate.predict as predict_module
+import tcrgnn.evaluate._predict as predict_module
 
 
 class DummyGraph:

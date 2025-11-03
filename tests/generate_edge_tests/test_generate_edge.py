@@ -3,7 +3,7 @@ import math
 from pathlib import Path
 from unittest import mock
 
-import tcrgnn.edge_gen.generate_edge as generate_edge
+import tcrgnn.edge_gen._generate_edge as _generate_edge
 
 
 def test_load_pdb_structure_success(monkeypatch):
@@ -13,12 +13,12 @@ def test_load_pdb_structure_success(monkeypatch):
     fake_parser_instance.get_structure.return_value = sentinel
 
     fake_PDBParser = mock.Mock(return_value=fake_parser_instance)
-    monkeypatch.setattr(generate_edge, "PDBParser", fake_PDBParser)
+    monkeypatch.setattr(_generate_edge, "PDBParser", fake_PDBParser)
 
     pdb_path = Path("/tmp/example.pdb")
 
     # Act
-    result = generate_edge.load_pdb_structure(pdb_path)
+    result = _generate_edge.load_pdb_structure(pdb_path)
 
     # Assert
     assert result is sentinel
@@ -32,17 +32,17 @@ def test_load_pdb_structure_failure_logs_and_returns_none(monkeypatch, caplog):
     # Arrange: parser.get_structure raises PDBConstructionException
     fake_parser_instance = mock.Mock()
     fake_parser_instance.get_structure.side_effect = (
-        generate_edge.PDBConstructionException("parse failure")
+        _generate_edge.PDBConstructionException("parse failure")
     )
 
     fake_PDBParser = mock.Mock(return_value=fake_parser_instance)
-    monkeypatch.setattr(generate_edge, "PDBParser", fake_PDBParser)
+    monkeypatch.setattr(_generate_edge, "PDBParser", fake_PDBParser)
 
     pdb_path = Path("/tmp/bad.pdb")
     caplog.set_level(logging.ERROR)
 
     # Act
-    result = generate_edge.load_pdb_structure(pdb_path)
+    result = _generate_edge.load_pdb_structure(pdb_path)
 
     # Assert
     assert result is None
@@ -130,7 +130,7 @@ def test_basic_same_chain_and_inclusive_cutoff():
     model = FakeModel([chain])
     structure = FakeStructure([model])
 
-    pairs = list(generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
+    pairs = list(_generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
     assert pairs == [("ALA", 1, "GLY", 2)]
 
 
@@ -143,7 +143,7 @@ def test_prefers_cb_over_ca():
     model = FakeModel([chain])
     structure = FakeStructure([model])
 
-    pairs = list(generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
+    pairs = list(_generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
     assert pairs == [], "CB must be preferred over CA when present"
 
 
@@ -155,7 +155,7 @@ def test_ca_fallback_when_no_cb():
     model = FakeModel([chain])
     structure = FakeStructure([model])
 
-    pairs = list(generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
+    pairs = list(_generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
     assert pairs == [("GLY", 5, "ALA", 6)]
 
 
@@ -168,7 +168,7 @@ def test_residues_without_ca_are_ignored():
     model = FakeModel([chain])
     structure = FakeStructure([model])
 
-    pairs = list(generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
+    pairs = list(_generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
     # Only pairs formed from residues with CA: (1,3) is within cutoff
     assert pairs == [("ALA", 1, "GLY", 3)]
 
@@ -184,7 +184,7 @@ def test_different_chains_not_compared():
     model = FakeModel([chain_a, chain_b])
     structure = FakeStructure([model])
 
-    pairs = list(generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
+    pairs = list(_generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
     # Expect two pairs, one from each chain, but no cross-chain combos
     assert ("ALA", 1, "GLY", 2) in pairs and len(pairs) == 2
 
@@ -203,7 +203,7 @@ def test_multiple_models_are_independent():
     model2 = FakeModel([chain_m2])
     structure = FakeStructure([model1, model2])
 
-    pairs = list(generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
+    pairs = list(_generate_edge.residue_pairs_within_cutoff(structure, cutoff=8.0))
     assert ("ALA", 1, "GLY", 2) in pairs
     assert ("THR", 3, "LYS", 4) in pairs
     assert len(pairs) == 2
@@ -226,7 +226,7 @@ ATOM      4  CB  THR A   4       0.000   0.000   8.100
     out_dir.mkdir()
 
     # Import here or adjust if already imported
-    generate_edge.alternate_parser(str(pdb_file), str(out_dir))
+    _generate_edge.alternate_parser(str(pdb_file), str(out_dir))
 
     # Check output
     out_file = out_dir / "small_edge.txt"
@@ -248,7 +248,7 @@ def test_edges_text_basic():
     structure = FakeStructure([model])
 
     # Call
-    txt = generate_edge.edges_text(structure, cutoff=8.0)
+    txt = _generate_edge.edges_text(structure, cutoff=8.0)
 
     # Only ALA1 GLY2 should be listed
     assert txt == "ALA 1 GLY 2\n"
@@ -262,7 +262,7 @@ def test_edges_text_multiple_pairs_and_order():
     model = FakeModel([chain])
     structure = FakeStructure([model])
 
-    txt = generate_edge.edges_text(structure, cutoff=8.0)
+    txt = _generate_edge.edges_text(structure, cutoff=8.0)
 
     # Expect (1,2) then (1,3) then (2,3) based on pair order
     assert txt == ("ALA 1 GLY 2\nALA 1 SER 3\nGLY 2 SER 3\n")

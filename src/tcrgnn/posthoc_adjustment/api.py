@@ -4,8 +4,8 @@ from pathlib import Path
 
 import numpy as np
 
-from tcrgnn.posthoc_adjustment.clonal_frequency import add_row_frequencies
-from tcrgnn.posthoc_adjustment.transform import (
+from tcrgnn.posthoc_adjustment._clonal_frequency import add_row_frequencies
+from tcrgnn.posthoc_adjustment._transform import (
     combined_score_distribution_aware_simple,
     combined_score_sample_blend,
 )

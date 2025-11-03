@@ -2,8 +2,8 @@
 import torch
 from torch_geometric.data import Data
 
-from tcrgnn.training.config import TrainConfig, TrainPaths
-from tcrgnn.training.train_api import train_model
+from tcrgnn.training._config import TrainConfig, TrainPaths
+from tcrgnn.training.api import train_model
 
 
 def test_train_model_calls_pipeline_with_expected_args(monkeypatch, tmp_path, capsys):
@@ -49,11 +49,9 @@ def test_train_model_calls_pipeline_with_expected_args(monkeypatch, tmp_path, ca
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
 
     # Patch symbols where they are USED
-    monkeypatch.setattr(
-        "tcrgnn.training.train_api.load_train_data", fake_load_train_data
-    )
-    monkeypatch.setattr("tcrgnn.training.train_api.GATv2", FakeGATv2)
-    monkeypatch.setattr("tcrgnn.training.train_api.train", fake_train)
+    monkeypatch.setattr("tcrgnn.training.api.load_train_data", fake_load_train_data)
+    monkeypatch.setattr("tcrgnn.training.api.GATv2", FakeGATv2)
+    monkeypatch.setattr("tcrgnn.training.api.train", fake_train)
 
     # Prepare config and save path
     cfg = TrainConfig(epochs=3, patience=1)  # values do not affect test except identity

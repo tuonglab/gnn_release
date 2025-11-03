@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from tcrgnn.utils.data_loading import load_test_file, load_train_data
+from tcrgnn.utils._data_loading import load_test_file, load_train_data
 
 try:
     from torch_geometric.data import Data
@@ -14,7 +14,7 @@ try:
 except Exception:
     HAS_PYG = False
 
-from tcrgnn.utils.data_loading import load_graphs
+from tcrgnn.utils._data_loading import load_graphs
 
 
 @pytest.mark.parametrize("use_path_obj", [False, True])
@@ -119,7 +119,7 @@ def test_load_train_data_traverses_dirs_and_appends_graph_lists(monkeypatch, tmp
 
     monkeypatch.setattr(os, "listdir", fake_listdir)
     monkeypatch.setattr(os.path, "isdir", lambda d: Path(d).is_dir())
-    monkeypatch.setattr("tcrgnn.utils.data_loading.load_graphs", fake_load_graphs)
+    monkeypatch.setattr("tcrgnn.utils._data_loading.load_graphs", fake_load_graphs)
 
     out = load_train_data([str(cancer_dir)], [str(control_dir)])
 
@@ -147,7 +147,7 @@ def test_load_train_data_skips_non_dirs(monkeypatch, tmp_path):
 
     # Real is dir, not_a_dir is not
     monkeypatch.setattr(os.path, "isdir", lambda d: Path(d).is_dir())
-    monkeypatch.setattr("tcrgnn.utils.data_loading.load_graphs", fake_load_graphs)
+    monkeypatch.setattr("tcrgnn.utils._data_loading.load_graphs", fake_load_graphs)
 
     out = load_train_data([str(real_dir), str(not_a_dir)], [str(not_a_dir)])
 
@@ -171,7 +171,7 @@ def test_load_test_file_reads_existing_file(monkeypatch, tmp_path):
         assert path == graph_file
         return sentinel
 
-    monkeypatch.setattr("tcrgnn.utils.data_loading.load_graphs", fake_load_graphs)
+    monkeypatch.setattr("tcrgnn.utils._data_loading.load_graphs", fake_load_graphs)
 
     out = load_test_file(graph_file)
     assert out is sentinel
@@ -200,7 +200,7 @@ def test_load_test_file_accepts_string_path(monkeypatch, tmp_path):
         assert path == graph_file
         return sentinel
 
-    monkeypatch.setattr("tcrgnn.utils.data_loading.load_graphs", fake_load_graphs)
+    monkeypatch.setattr("tcrgnn.utils._data_loading.load_graphs", fake_load_graphs)
 
     # Pass a string path instead of Path
     out = load_test_file(str(graph_file))

@@ -3,18 +3,18 @@ from unittest import mock
 import torch
 from torch_geometric.data import Data
 
-from tcrgnn.evaluate import utils
+from tcrgnn.evaluate import _utils
 
 
 def test_get_device_returns_cuda_when_available(monkeypatch):
     monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
-    device = utils.get_device()
+    device = _utils.get_device()
     assert device.type == "cuda"
 
 
 def test_get_device_returns_cpu_when_cuda_unavailable(monkeypatch):
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
-    device = utils.get_device()
+    device = _utils.get_device()
     assert device.type == "cpu"
 
 
@@ -42,7 +42,7 @@ def test_load_trained_model_loads_state_and_sets_eval(monkeypatch):
     model.to = mock.Mock(return_value=model)
     model.eval = mock.Mock(return_value=model)
 
-    result = utils.load_trained_model(model, "dummy.pt", device)
+    result = _utils.load_trained_model(model, "dummy.pt", device)
 
     assert result is model
     assert captured == {"path": "dummy.pt", "map_location": device}
@@ -62,7 +62,7 @@ def test_move_graph_to_device_uses_graph_to_method():
 
     graph = DummyGraph()
     device = torch.device("cpu")
-    moved = utils.move_graph_to_device(graph, device)
+    moved = _utils.move_graph_to_device(graph, device)
     assert moved is graph
     assert graph.moved_to == device
 
@@ -72,7 +72,7 @@ def test_make_loader_produces_ordered_batches():
         Data(x=torch.tensor([[0.0]])),
         Data(x=torch.tensor([[1.0]])),
     ]
-    loader = utils.make_loader(data_items)
+    loader = _utils.make_loader(data_items)
     batches = list(loader)
     assert loader.batch_size == 1
     assert len(batches) == 2
@@ -82,13 +82,13 @@ def test_make_loader_produces_ordered_batches():
 
 def test_write_scores_to_txt_without_sequences(tmp_path):
     path = tmp_path / "scores.txt"
-    utils.write_scores_to_txt([0.1, 0.2], str(path))
+    _utils.write_scores_to_txt([0.1, 0.2], str(path))
     assert path.read_text().splitlines() == ["0.1", "0.2"]
 
 
 def test_write_scores_to_txt_with_sequence_mismatch(tmp_path, capsys):
     path = tmp_path / "scores_with_seq.txt"
-    utils.write_scores_to_txt([0.5], str(path), ["AAA", "BBB"])
+    _utils.write_scores_to_txt([0.5], str(path), ["AAA", "BBB"])
     captured = capsys.readouterr().out.strip()
     assert "Warning: Length of sequences does not match length of scores." in captured
     assert path.read_text().splitlines() == ["AAA,0.5", "BBB,N/A"]

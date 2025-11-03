@@ -3,7 +3,7 @@ from pathlib import Path
 from tcrgnn.utils.device import get_device, set_seed
 
 from tcrgnn import GATv2, TrainConfig, TrainPaths, train
-from tcrgnn.utils.data_loading import load_train_data
+from tcrgnn.utils._data_loading import load_train_data
 
 
 def run():

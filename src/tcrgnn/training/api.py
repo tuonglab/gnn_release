@@ -6,9 +6,9 @@ import torch
 
 from tcrgnn.models.gatv2 import GATv2
 
-from ..utils.data_loading import load_train_data
-from .config import TrainConfig, TrainPaths
-from .loop import train
+from ..utils._data_loading import load_train_data
+from ._config import TrainConfig, TrainPaths
+from ._loop import train
 
 
 def train_model(

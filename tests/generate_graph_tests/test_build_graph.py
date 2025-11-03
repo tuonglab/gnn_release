@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from tcrgnn.graph_gen.build_graph import (
+from tcrgnn.graph_gen._build_graph import (
     _assemble_graph,
     _index_nodes_and_edges,
     build_graph_from_edgelist,

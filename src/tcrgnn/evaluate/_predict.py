@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 import torch
 
-from tcrgnn.evaluate.utils import move_graph_to_device
+from tcrgnn.evaluate._utils import move_graph_to_device
 
 
 @torch.inference_mode()
