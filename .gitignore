@@ -1,0 +1,10 @@
+.coverage
+.pdmm-python
+test_data*
+.vscode
+dataset*
+model_2025*
+old_folders
+__pycache__/
+dist
+.pdm-python
