@@ -4,8 +4,8 @@ from pathlib import Path
 import pandas as pd
 from torch_geometric.data import Data
 
-from ._io import list_edge_txts, parse_edges
-from .build_graph import build_graph_from_edgelist
+from ._build_graph import build_graph_from_edgelist
+from ._io import list_edge_txts, parse_edges, save_graphs_to_disk
 
 LOG = logging.getLogger(__name__)
 
@@ -15,9 +15,11 @@ def generate_graphs_from_edge_dir(
     pca_encoding: pd.DataFrame,
     aa_map: dict[str, str],
     label: int,
+    save_to_disk: bool = False,
+    filename: str = "generated_graphs.pt",
 ) -> list[Data]:
     """
-    Build graphs from all edge text files in a directory.
+    Build graphs from all edge list text files in a directory.
 
     Parameters
     ----------
@@ -28,7 +30,11 @@ def generate_graphs_from_edge_dir(
     aa_map : dict[str, str]
         Mapping from three letter to single letter amino acids.
     label : int
-        Integer class label to attach to each graph.
+        Integer class label attached to each graph.
+    save_to_disk : bool, optional
+        If True, the generated graphs are written to disk.
+    filename : str, optional
+        Output file name used when saving graphs to disk.
 
     Returns
     -------
@@ -37,7 +43,7 @@ def generate_graphs_from_edge_dir(
     """
     # Collect files and keep order stable
     edge_txt_files = sorted(list_edge_txts(edge_dir))
-    return [
+    graphs = [
         build_graph_from_edgelist(
             parse_edges(p),  # convert file to edgelist
             pca_encoding=pca_encoding,
@@ -46,6 +52,10 @@ def generate_graphs_from_edge_dir(
         )
         for p in edge_txt_files
     ]
+
+    if save_to_disk:
+        save_graphs_to_disk(graphs, filename)
+    return graphs
 
 
 def generate_graph_from_edge_file(

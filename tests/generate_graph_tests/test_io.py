@@ -2,8 +2,11 @@
 from pathlib import Path
 
 import pytest
+import torch
+from torch_geometric.data import Data
 
 from tcrgnn.graph_gen._io import list_edge_txts, parse_edges
+from tcrgnn.graph_gen.api import save_graphs_to_disk
 
 
 def write(p: Path, text: str = "") -> Path:
@@ -96,3 +99,26 @@ def test_parse_edges_missing_file_raises(tmp_path: Path):
     missing = tmp_path / "nope.txt"
     with pytest.raises(FileNotFoundError):
         parse_edges(missing)
+
+
+def test_save_graphs_to_disk_roundtrip(tmp_path):
+    # Prepare some simple Data objects
+    graphs = [Data(x=torch.randn(3, 4), y=torch.tensor(1))]
+
+    out_file = tmp_path / "graphs.pt"
+
+    # Call the function under test
+    save_graphs_to_disk(graphs, out_file)
+
+    # File should exist
+    assert out_file.is_file()
+
+    # Load back with torch.load and compare
+    loaded = torch.load(str(out_file))
+    assert isinstance(loaded, list)
+    assert len(loaded) == 1
+    assert isinstance(loaded[0], Data)
+
+    # Check attributes survived
+    assert loaded[0].x.shape == (3, 4)
+    assert loaded[0].y.item() == 1

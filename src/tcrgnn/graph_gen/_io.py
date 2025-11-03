@@ -22,3 +22,19 @@ def list_edge_txts(root: Path | str) -> list[Path]:
 def parse_edges(edge_file: Path) -> list[list[str]]:
     with edge_file.open() as f:
         return [line.strip().split() for line in f if line.strip()]
+
+
+def save_graphs_to_disk(graphs, file: Path) -> None:
+    """
+    Save a list of PyTorch Geometric Data objects to disk.
+
+    Parameters
+    ----------
+    graphs : list[torch_geometric.data.Data]
+        List of graph objects to save.
+    file : pathlib.Path
+        Path to the output file.
+    """
+    import torch
+
+    torch.save(graphs, str(file))

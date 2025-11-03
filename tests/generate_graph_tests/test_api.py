@@ -142,3 +142,55 @@ def test_generate_graph_from_edge_file_calls_parse_then_builder(monkeypatch, tmp
     assert kwargs["pca_encoding"] is pca_df
     assert kwargs["aa_map"] is aa_map
     assert kwargs["label"] == label
+
+
+def test_generate_graphs_from_edge_dir_save(monkeypatch, tmp_path):
+    # Create two fake edge files
+    f1 = tmp_path / "a.txt"
+    f2 = tmp_path / "b.txt"
+    f1.write_text("ALA 0 ALA 1\n")
+    f2.write_text("ALA 1 ALA 2\n")
+
+    # Capture calls
+    calls = {"save": None}
+
+    # Fake parse returns predictable edgelists
+    def fake_parse_edges(path):
+        return [(str(path), "X")]
+
+    # Fake builder returns Data tagged with filename
+    def fake_build_graph_from_edgelist(edgelist, **kwargs):
+        return Data(tag=edgelist[0][0])
+
+    # Fake saver to record args
+    def fake_save_graphs_to_disk(graphs, file):
+        calls["save"] = {"graphs": graphs, "file": file}
+
+    monkeypatch.setattr("tcrgnn.graph_gen.api.parse_edges", fake_parse_edges)
+    monkeypatch.setattr(
+        "tcrgnn.graph_gen.api.build_graph_from_edgelist", fake_build_graph_from_edgelist
+    )
+    monkeypatch.setattr(
+        "tcrgnn.graph_gen.api.save_graphs_to_disk", fake_save_graphs_to_disk
+    )
+    monkeypatch.setattr("tcrgnn.graph_gen.api.list_edge_txts", lambda d: [f1, f2])
+
+    out = generate_graphs_from_edge_dir(
+        edge_dir=tmp_path,
+        pca_encoding=pd.DataFrame(),
+        aa_map={},
+        label=3,
+        save_to_disk=True,
+        filename="out.pt",
+    )
+
+    # Should produce two graphs
+    assert len(out) == 2
+    assert isinstance(out[0], Data)
+
+    # Saver must have been called
+    assert calls["save"] is not None
+    # Saver receives same list
+    assert calls["save"]["graphs"] is out
+    # And correct filename
+    assert calls["save"]["file"] == "out.pt"
