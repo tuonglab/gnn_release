@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from tcrgnn.utils.data_loading import load_train_data
+from tcrgnn.utils.data_loading import load_test_file, load_train_data
 
 try:
     from torch_geometric.data import Data
@@ -155,3 +155,54 @@ def test_load_train_data_skips_non_dirs(monkeypatch, tmp_path):
     assert calls == ["file.pt"]
     assert len(out) == 1
     assert len(out[0]) == 1
+
+
+def test_load_test_file_reads_existing_file(monkeypatch, tmp_path):
+    # Create a fake file
+    graph_file = tmp_path / "graphs.pt"
+    graph_file.write_text("stub")
+
+    # Sentinel data
+    sentinel = [Data(tag="ok")]
+
+    # Patch load_graphs so we do not need a real file format
+    def fake_load_graphs(path):
+        # Make sure the function forwards the right path
+        assert path == graph_file
+        return sentinel
+
+    monkeypatch.setattr("tcrgnn.utils.data_loading.load_graphs", fake_load_graphs)
+
+    out = load_test_file(graph_file)
+    assert out is sentinel
+    assert isinstance(out[0], Data)
+    assert out[0].tag == "ok"
+
+
+def test_load_test_file_missing_file_raises(tmp_path):
+    missing = tmp_path / "nope.pt"
+
+    with pytest.raises(FileNotFoundError) as exc:
+        load_test_file(missing)
+
+    # Check message content
+    assert "Test file not found" in str(exc.value)
+    assert str(missing) in str(exc.value)
+
+
+def test_load_test_file_accepts_string_path(monkeypatch, tmp_path):
+    graph_file = tmp_path / "graphs.pt"
+    graph_file.write_text("stub")
+
+    sentinel = [Data(tag="str")]
+
+    def fake_load_graphs(path):
+        assert path == graph_file
+        return sentinel
+
+    monkeypatch.setattr("tcrgnn.utils.data_loading.load_graphs", fake_load_graphs)
+
+    # Pass a string path instead of Path
+    out = load_test_file(str(graph_file))
+    assert out is sentinel
+    assert out[0].tag == "str"
