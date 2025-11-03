@@ -71,5 +71,7 @@ def generate_graph_from_edge_file(
         A graph object constructed from all edges described in the file.
     """
     edge_lst = parse_edges(edge_file)
-    graph = build_graph_from_edgelist(edge_lst)
+    graph = build_graph_from_edgelist(
+        edge_lst, pca_encoding=pca_encoding, aa_map=aa_map, label=label
+    )
     return graph

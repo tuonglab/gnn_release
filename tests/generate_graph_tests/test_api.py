@@ -109,14 +109,22 @@ def test_generate_graph_from_edge_file_calls_parse_then_builder(monkeypatch, tmp
         # Return a simple Data object so we can assert on the return value
         return Data(tag="sentinel")
 
+    # IMPORTANT: patch where the functions are *looked up* (the api module),
+    # not where they are defined elsewhere.
     monkeypatch.setattr("tcrgnn.graph_gen.api.parse_edges", fake_parse_edges)
     monkeypatch.setattr(
-        "tcrgnn.graph_gen.api.build_graph_from_edgelist", fake_build_graph_from_edgelist
+        "tcrgnn.graph_gen.api.build_graph_from_edgelist",
+        fake_build_graph_from_edgelist,
     )
+
+    # Inputs that should be forwarded to the builder
+    pca_df = pd.DataFrame()
+    aa_map = {}
+    label = 7
 
     # Run
     out = generate_graph_from_edge_file(
-        edge_file, pca_encoding=pd.DataFrame(), aa_map={}, label=7
+        edge_file, pca_encoding=pca_df, aa_map=aa_map, label=label
     )
 
     # It should return whatever the builder returned
@@ -126,8 +134,11 @@ def test_generate_graph_from_edge_file_calls_parse_then_builder(monkeypatch, tmp
     # parse_edges must be called with the file path
     assert calls["parse"] == edge_file
 
-    # The current implementation forwards only the edgelist to the builder
-    # and does not pass pca_encoding, aa_map, or label. This assertion locks
-    # in that behavior and will fail if the function is later fixed to pass through.
+    # The builder should get the edgelist as the ONLY positional arg
     assert calls["build"]["args"] == ([("ALA", "0", "ALA", "1")],)
-    assert calls["build"]["kwargs"] == {}
+
+    # And the extra params should be forwarded as kwargs, unchanged
+    kwargs = calls["build"]["kwargs"]
+    assert kwargs["pca_encoding"] is pca_df
+    assert kwargs["aa_map"] is aa_map
+    assert kwargs["label"] == label
