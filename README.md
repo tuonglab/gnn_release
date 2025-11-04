@@ -2,6 +2,8 @@
 
 ## Installation
 
+## Does not work on Windows 😢 
+
 *NOTE: At the moment, since development is pinneed on torch==2.3.1, we will use it for now. 
 To install torch==2.3.1, if your system supports GPU, 
 
