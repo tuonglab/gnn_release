@@ -10,7 +10,7 @@ dependencies = [
     "seaborn",
     "networkx",
     "biopython",
-    "scipy ^1.16.2"
+    "scipy=^1.16.2"
 ]
 requires-python = ">=3.11"
 readme = "README.md"
