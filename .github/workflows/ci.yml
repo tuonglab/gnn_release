@@ -27,7 +27,7 @@ jobs:
       - name: Regenerate lockfile for Windows
         if: runner.os == 'Windows'
         run: |
-          rm -f pdm.lock
+          rm -Force pdm.lock
           pdm lock --platform=windows --python="${{ matrix.python-version }}" --lockfile=pdm.lock
 
       - name: Install dependencies and project
