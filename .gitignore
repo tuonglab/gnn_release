@@ -8,3 +8,4 @@ old_folders
 __pycache__/
 dist
 .pdm-python
+pdm.lock
