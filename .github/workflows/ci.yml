@@ -15,6 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: ["3.11"]
+
     steps:
       - uses: actions/checkout@v4
 
@@ -23,20 +24,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: true
-          cache-dependency-path: pdm.lock
+          # Use pyproject.toml for cache key if pdm.lock is not present
+          cache-dependency-path: |
+            pyproject.toml
+            pdm.lock
 
       - name: Install dependencies and project
-        run: |
-          pdm install
+        run: pdm install
 
       - name: Lint with Ruff
-        run: |
-          pdm run ruff check .
+        run: pdm run ruff check .
 
       - name: Format check with Ruff
-        run: |
-          pdm run ruff format --check .
+        run: pdm run ruff format --check .
 
       - name: Run tests
-        run: |
-          pdm run pytest -q
+        run: pdm run pytest -q
