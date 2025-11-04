@@ -21,9 +21,14 @@ jobs:
         uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
-          # enable caching of dependencies
           cache: true
           cache-dependency-path: pdm.lock
+
+      - name: Regenerate lockfile for Windows
+        if: runner.os == 'Windows'
+        run: |
+          rm -f pdm.lock
+          pdm lock --platform=windows --python="${{ matrix.python-version }}" --lockfile=pdm.lock
 
       - name: Install dependencies and project
         run: |
