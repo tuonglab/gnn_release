@@ -5,13 +5,18 @@ description = "GNN TCR Python Package"
 authors = [{ name = "Amos Choo", email = "amos.choo@uq.edu.au" }]
 dependencies = [
     "torch_geometric==2.5.3",
-    "jupyter",
     "matplotlib",
     "seaborn",
     "networkx",
     "biopython",
-    "scipy^1.16.2"
+    "scipy==1.16.2",
+    "torch==2.3.1",
+    "torchvision==0.18.1",
+    "torchaudio==2.3.1",
+    "numpy<=2.3.1",
+    "pandas<=2.3.3"
 ]
+
 requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "MIT" }
