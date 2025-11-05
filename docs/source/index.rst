@@ -6,6 +6,13 @@ tcrgnn documentation
 
 .. toctree::
    :maxdepth: 2
+   :caption: Tutorial:
+   :glob:
+
+   tutorial/*
+
+.. toctree::
+   :maxdepth: 2
    :caption: Contents:
 
    api/tcrgnn.edge_gen

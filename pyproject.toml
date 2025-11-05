@@ -89,7 +89,8 @@ docs = [
   "furo",
   "sphinx-copybutton",
   "sphinx-autobuild",
-  "sphinx_rtd_theme"
+  "sphinx_rtd_theme",
+  "nbsphinx"
 ]
 
 [project.optional-dependencies]
@@ -99,5 +100,6 @@ docs = [
   "furo",
   "sphinx-copybutton",
   "sphinx-autobuild",
-  "sphinx_rtd_theme"
+  "sphinx_rtd_theme",
+  "nbsphinx"
 ]
