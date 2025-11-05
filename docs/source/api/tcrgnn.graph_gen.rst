@@ -12,10 +12,3 @@ tcrgnn.graph\_gen.api module
    :show-inheritance:
    :undoc-members:
 
-Module contents
----------------
-
-.. automodule:: tcrgnn.graph_gen
-   :members:
-   :show-inheritance:
-   :undoc-members:

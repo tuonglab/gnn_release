@@ -12,10 +12,3 @@ tcrgnn.training.api module
    :show-inheritance:
    :undoc-members:
 
-Module contents
----------------
-
-.. automodule:: tcrgnn.training
-   :members:
-   :show-inheritance:
-   :undoc-members:

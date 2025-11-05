@@ -12,10 +12,3 @@ tcrgnn.models.gatv2 module
    :show-inheritance:
    :undoc-members:
 
-Module contents
----------------
-
-.. automodule:: tcrgnn.models
-   :members:
-   :show-inheritance:
-   :undoc-members:

@@ -20,10 +20,3 @@ tcrgnn.edge\_gen.cli module
    :show-inheritance:
    :undoc-members:
 
-Module contents
----------------
-
-.. automodule:: tcrgnn.edge_gen
-   :members:
-   :show-inheritance:
-   :undoc-members:

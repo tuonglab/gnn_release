@@ -12,10 +12,3 @@ tcrgnn.posthoc\_adjustment.api module
    :show-inheritance:
    :undoc-members:
 
-Module contents
----------------
-
-.. automodule:: tcrgnn.posthoc_adjustment
-   :members:
-   :show-inheritance:
-   :undoc-members:
