@@ -17,9 +17,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    "sphinx.ext.apidoc",
-    "myst_parser",
-    "nbsphinx",
+    "myst_nb",
 ]
 
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}

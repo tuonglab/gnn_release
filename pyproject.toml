@@ -85,21 +85,19 @@ dev = [
 
 docs = [
   "sphinx>=8",
-  "myst-parser",
   "furo",
   "sphinx-copybutton",
   "sphinx-autobuild",
   "sphinx_rtd_theme",
-  "nbsphinx"
+  "myst-nb"
 ]
 
 [project.optional-dependencies]
 docs = [
   "sphinx>=8",
-  "myst-parser",
   "furo",
   "sphinx-copybutton",
   "sphinx-autobuild",
   "sphinx_rtd_theme",
-  "nbsphinx"
+  "myst-nb"
 ]
