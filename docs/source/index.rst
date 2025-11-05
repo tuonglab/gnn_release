@@ -9,7 +9,7 @@ tcrgnn documentation
    :caption: Tutorial:
    :glob:
 
-   tutorial/*
+   ../../tutorial/*
 
 .. toctree::
    :maxdepth: 2
