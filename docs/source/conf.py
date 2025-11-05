@@ -19,6 +19,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.apidoc",
     "myst_parser",
+    "nbsphinx",
 ]
 
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
