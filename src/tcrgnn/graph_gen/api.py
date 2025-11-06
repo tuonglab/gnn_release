@@ -11,7 +11,7 @@ LOG = logging.getLogger(__name__)
 
 
 def generate_graphs_from_edge_dir(
-    edge_dir: Path,
+    edge_dir: Path | str,
     pca_encoding: pd.DataFrame,
     label: int,
     save_to_disk: bool = False,
