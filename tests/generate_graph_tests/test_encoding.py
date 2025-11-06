@@ -1,7 +1,7 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from tcrgnn.graph_gen._encodings import load_pca_encoding
+from tcrgnn.graph_gen.encodings import load_pca_encoding
 
 
 def test_load_pca_encoding_preserves_single_letter_index(tmp_path):

@@ -45,13 +45,12 @@ def test_generate_graphs_from_edge_dir_calls_dependencies_in_sorted_order(
 
     build_calls = []
 
-    def fake_build_graph_from_edgelist(edgelist, *, pca_encoding, aa_map, label):
+    def fake_build_graph_from_edgelist(edgelist, *, pca_encoding, label):
         # Record that args were passed through correctly
         build_calls.append(
             {
                 "edgelist": tuple(edgelist),
                 "pca_encoding_id": id(pca_encoding),
-                "aa_map_id": id(aa_map),
                 "label": label,
             }
         )
@@ -69,7 +68,7 @@ def test_generate_graphs_from_edge_dir_calls_dependencies_in_sorted_order(
     )
 
     # Run
-    out = generate_graphs_from_edge_dir(tmp_path, pca, aa_map, label)
+    out = generate_graphs_from_edge_dir(tmp_path, pca, label)
 
     # Verify we got one Data per file
     assert isinstance(out, list)
@@ -86,7 +85,6 @@ def test_generate_graphs_from_edge_dir_calls_dependencies_in_sorted_order(
 
     # Every build call should have received the exact same pca, aa_map by identity
     assert all(call["pca_encoding_id"] == id(pca) for call in build_calls)
-    assert all(call["aa_map_id"] == id(aa_map) for call in build_calls)
     assert all(call["label"] == label for call in build_calls)
 
 
@@ -119,13 +117,10 @@ def test_generate_graph_from_edge_file_calls_parse_then_builder(monkeypatch, tmp
 
     # Inputs that should be forwarded to the builder
     pca_df = pd.DataFrame()
-    aa_map = {}
     label = 7
 
     # Run
-    out = generate_graph_from_edge_file(
-        edge_file, pca_encoding=pca_df, aa_map=aa_map, label=label
-    )
+    out = generate_graph_from_edge_file(edge_file, pca_encoding=pca_df, label=label)
 
     # It should return whatever the builder returned
     assert isinstance(out, Data)
@@ -140,7 +135,6 @@ def test_generate_graph_from_edge_file_calls_parse_then_builder(monkeypatch, tmp
     # And the extra params should be forwarded as kwargs, unchanged
     kwargs = calls["build"]["kwargs"]
     assert kwargs["pca_encoding"] is pca_df
-    assert kwargs["aa_map"] is aa_map
     assert kwargs["label"] == label
 
 
@@ -178,7 +172,6 @@ def test_generate_graphs_from_edge_dir_save(monkeypatch, tmp_path):
     out = generate_graphs_from_edge_dir(
         edge_dir=tmp_path,
         pca_encoding=pd.DataFrame(),
-        aa_map={},
         label=3,
         save_to_disk=True,
         filename="out.pt",

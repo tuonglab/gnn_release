@@ -7,10 +7,11 @@ import pandas as pd
 import torch
 from torch_geometric.data import Data
 
+from .encodings import AMINO_ACID_MAPPING
+
 
 def _index_nodes_and_edges(
     edgelist: Iterable[tuple[str, str, str, str]],
-    aa_map: dict[str, str],
 ) -> tuple[
     list[tuple[str, str]],
     dict[tuple[str, str], int],
@@ -22,14 +23,12 @@ def _index_nodes_and_edges(
 
     Each tuple represents a directed edge from residue (a3, i_str) to (b3, j_str).
     Residue codes use three letter amino acid abbreviations mapped to single letter
-    via aa_map. Positions are provided as strings and cast to int.
+    via AMINO_ACID_MAPPING. Positions are provided as strings and cast to int.
 
     Parameters
     ----------
     edgelist
         Iterable of 4-tuples (a3, i_str, b3, j_str).
-    aa_map
-        Mapping from three letter amino acid codes to single letter codes.
 
     Returns
     -------
@@ -53,7 +52,7 @@ def _index_nodes_and_edges(
             if node not in node_map:
                 node_map[node] = len(nodes)
                 nodes.append(node)
-                pos_to_char[int(node[1])] = aa_map[node[0]]
+                pos_to_char[int(node[1])] = AMINO_ACID_MAPPING[node[0]]
         # record directed edge
         edge_pairs.append((node_map[(a3, i_str)], node_map[(b3, j_str)]))
 
@@ -64,7 +63,6 @@ def _assemble_graph(
     nodes: list[tuple[str, str]],
     edge_pairs: list[tuple[int, int]],
     pca_encoding: pd.DataFrame,
-    aa_map: dict[str, str],
     pos_to_char: dict[int, str],
     label: int,
     *,
@@ -81,8 +79,7 @@ def _assemble_graph(
         Directed edges as index pairs (src_idx, dst_idx).
     pca_encoding
         DataFrame indexed by single letter amino acids with PCA feature columns.
-    aa_map
-        Mapping from three letter codes to single letter amino acids.
+
     pos_to_char
         Mapping from position to single letter amino acid for sequence reconstruction.
     label
@@ -110,10 +107,12 @@ def _assemble_graph(
 
     # Node features using PCA encoding indexed by single letter AA
     try:
-        x_mat = np.array([pca_encoding.loc[aa_map[a3]].values for a3, _ in nodes])
+        x_mat = np.array(
+            [pca_encoding.loc[AMINO_ACID_MAPPING[a3]].values for a3, _ in nodes]
+        )
     except KeyError as e:
         raise KeyError(
-            f"Amino acid not found in pca_encoding index or aa_map is missing a key: {e}"
+            f"Amino acid not found in pca_encoding index or AMINO_ACID_MAPPING is missing a key: {e}"
         ) from e
 
     x = torch.tensor(x_mat, dtype=torch.float)
@@ -130,7 +129,6 @@ def _assemble_graph(
 def build_graph_from_edgelist(
     edgelist: list[tuple[str, str, str, str]],
     pca_encoding: pd.DataFrame,
-    aa_map: dict[str, str],
     label: int,
 ) -> Data:
     """
@@ -142,8 +140,7 @@ def build_graph_from_edgelist(
         Edges as (a3, i_str, b3, j_str).
     pca_encoding
         DataFrame indexed by single letter amino acids with PCA feature columns.
-    aa_map
-        Mapping from three letter codes to single letter amino acids.
+
     label
         Integer class label.
 
@@ -152,5 +149,5 @@ def build_graph_from_edgelist(
     Data
         A graph object with node features from pca_encoding and reconstructed sequence.
     """
-    nodes, _node_map, pos_to_char, edge_pairs = _index_nodes_and_edges(edgelist, aa_map)
-    return _assemble_graph(nodes, edge_pairs, pca_encoding, aa_map, pos_to_char, label)
+    nodes, _node_map, pos_to_char, edge_pairs = _index_nodes_and_edges(edgelist)
+    return _assemble_graph(nodes, edge_pairs, pca_encoding, pos_to_char, label)

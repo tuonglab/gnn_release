@@ -37,7 +37,7 @@ def test_index_nodes_and_edges_basic_and_stability():
         ),  # position string with leading zero to test int() parsing
     ]
 
-    nodes, node_map, pos_to_char, edge_pairs = _index_nodes_and_edges(edgelist, aa_map)
+    nodes, node_map, pos_to_char, edge_pairs = _index_nodes_and_edges(edgelist)
 
     # Node order must follow first appearance
     assert nodes == [("ALA", "0"), ("CYS", "2"), ("GLY", "1"), ("THR", "03")]
@@ -72,7 +72,6 @@ def test_assemble_graph_undirected_true():
         nodes=nodes,
         edge_pairs=edge_pairs,
         pca_encoding=pca,
-        aa_map=aa_map,
         pos_to_char=pos_to_char,
         label=7,
         undirected=True,
@@ -116,7 +115,6 @@ def test_assemble_graph_directed_false():
         nodes=nodes,
         edge_pairs=edge_pairs,
         pca_encoding=pca,
-        aa_map=aa_map,
         pos_to_char=pos_to_char,
         label=3,
         undirected=False,  # exercise the else branch
@@ -142,17 +140,15 @@ def test_build_graph_from_edgelist_integration_matches_manual_undirected():
     built = build_graph_from_edgelist(
         edgelist=edgelist,
         pca_encoding=pca,
-        aa_map=aa_map,
         label=99,
     )
 
     # Recreate expected intermediate results to compare
-    nodes, _, pos_to_char, edge_pairs = _index_nodes_and_edges(edgelist, aa_map)
+    nodes, _, pos_to_char, edge_pairs = _index_nodes_and_edges(edgelist)
     manual = _assemble_graph(
         nodes=nodes,
         edge_pairs=edge_pairs,
         pca_encoding=pca,
-        aa_map=aa_map,
         pos_to_char=pos_to_char,
         label=99,
         undirected=True,  # default path exercised by build_graph_from_edgelist

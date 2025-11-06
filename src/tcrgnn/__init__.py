@@ -11,6 +11,7 @@ from .graph_gen.api import (
     generate_graph_from_edge_file,
     generate_graphs_from_edge_dir,
 )
+from .graph_gen.encodings import load_pca_encoding
 from .models.gatv2 import GATv2
 from .plotting import charts
 from .plotting.charts import (
@@ -55,4 +56,5 @@ __all__ = [
     "tmp_root",
     "safe_extract_tar_gz",
     "is_within_directory",
+    "load_pca_encoding",
 ]
