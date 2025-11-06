@@ -56,7 +56,7 @@ def generate_graphs_from_edge_dir(
 
 
 def generate_graph_from_edge_file(
-    edge_file: Path, pca_encoding: pd.DataFrame, label: int
+    edge_file: Path | str, pca_encoding: pd.DataFrame, label: int
 ) -> Data:
     """
     Generate a single PyTorch Geometric graph from an edge list text file.
