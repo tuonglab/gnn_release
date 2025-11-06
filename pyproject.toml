@@ -32,7 +32,7 @@ distribution = true
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-exclude = ["old_folders"]
+exclude = ["old_folders","*.ipynb"]
 
 # Enable Ruff formatting (replaces Black)
 [tool.ruff.format]
