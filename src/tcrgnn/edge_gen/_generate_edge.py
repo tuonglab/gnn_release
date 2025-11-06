@@ -12,35 +12,43 @@ from Bio.PDB.Residue import Residue
 from Bio.PDB.Structure import Structure
 
 
-def load_pdb_structure(pdb_path: Path) -> Structure | None:
+def load_pdb_structure(pdb_path: str | Path):
     """
     Load a PDB structure from a file path using Bio.PDB.PDBParser.
 
     Parameters
     ----------
-    pdb_path : pathlib.Path
+    pdb_path : str or pathlib.Path
         Filesystem path to the PDB file to parse. The parser will use
-        pdb_path.stem as the structure id and str(pdb_path) as the file path.
+        the stem (filename without suffix) of the path as the structure id.
 
     Returns
     -------
     Bio.PDB.Structure.Structure or None
         A Bio.PDB Structure object on successful parsing, or None if parsing
-        fails (e.g., a PDBConstructionException is raised). Parsing errors are
-        logged via the module's logging facility.
+        fails. Parsing errors are logged.
 
     Example
     -------
-    structure = load_pdb_structure(Path("/path/to/file.pdb"))
+    structure = load_pdb_structure("/path/to/file.pdb")
     if structure is None:
         # handle parse failure
     """
+    if isinstance(pdb_path, Path):
+        structure_id = pdb_path.stem
+        pdb_path_str = str(pdb_path)
+    else:
+        pdb_path = Path(pdb_path)
+        structure_id = pdb_path.stem
+        pdb_path_str = str(pdb_path)
+
     parser = PDBParser(QUIET=True)
+
     try:
-        structure = parser.get_structure(pdb_path.stem, str(pdb_path))
+        structure = parser.get_structure(structure_id, pdb_path_str)
         return structure
     except PDBConstructionException as e:
-        logging.error(f"Error parsing PDB file {pdb_path}: {e}")
+        logging.error(f"Error parsing PDB file {pdb_path_str}: {e}")
         return None
 
 

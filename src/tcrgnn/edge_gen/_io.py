@@ -8,7 +8,7 @@ from Bio.PDB.PDBExceptions import PDBConstructionException
 LOG = logging.getLogger("tcrgnn.edgegen.io")
 
 
-def iter_target_pdbs(root: Path, patterns: tuple[str, ...]) -> list[Path]:
+def iter_target_pdbs(root: Path | str, patterns: tuple[str, ...]) -> list[Path | str]:
     """
     Recursively discover PDB files under a root directory matching patterns.
 
@@ -18,11 +18,13 @@ def iter_target_pdbs(root: Path, patterns: tuple[str, ...]) -> list[Path]:
 
     Returns:
         List of matching PDB paths.
+
     """
+    root = Path(root)
     return [p for p in root.rglob("*.pdb") if any(pat in p.name for pat in patterns)]
 
 
-def load_pdb_structure(pdb_path: Path):
+def load_pdb_structure(pdb_path: Path | str):
     """
     Parse a PDB file into a Biopython Structure.
 

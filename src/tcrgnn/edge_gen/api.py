@@ -1,9 +1,10 @@
-import _io as io
 import logging
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 
+from . import _io as io
 from ._generate_edge import edges_text, load_pdb_structure
 
 LOG = logging.getLogger("tcrgnn.edgegen")
@@ -24,7 +25,9 @@ class EdgeGenConfig:
     keep_expanded: bool = False
 
 
-def write_edges_file_for_pdb(pdb_path: Path, out_dir: Path, cutoff: float) -> Path:
+def write_edges_file_for_pdb(
+    pdb_path: Path | str, out_dir: Path | str, cutoff: float
+) -> Path:
     """
     Generate an edge list text file for a given PDB structure using a distance cutoff.
 
@@ -65,7 +68,7 @@ def write_edges_file_for_pdb(pdb_path: Path, out_dir: Path, cutoff: float) -> Pa
 
 # New: handle a single PDB file as input
 def generate_edges_from_pdb_file(
-    pdb_file: Path, output_dir: Path, cfg: EdgeGenConfig
+    pdb_file: Path | str, output_dir: Path | str, cfg: EdgeGenConfig
 ) -> Path:
     """
     Generate and write graph edges derived from a PDB structure to the given directory.
@@ -82,6 +85,8 @@ def generate_edges_from_pdb_file(
         FileNotFoundError: If the specified PDB file does not exist.
         ValueError: If the provided file is not a PDB file.
     """
+    pdb_file = Path(pdb_file)
+    output_dir = Path(output_dir)
 
     if not pdb_file.exists():
         raise FileNotFoundError(f"File not found: {pdb_file}")
@@ -94,7 +99,7 @@ def generate_edges_from_pdb_file(
 
 
 def generate_edges_from_pdb_dir(
-    pdb_dir: Path, output_dir: Path, cfg: EdgeGenConfig
+    pdb_dir: Path | str, output_dir: Path | str, cfg: EdgeGenConfig
 ) -> list[Path]:
     """Generate edge files for all PDBs within a directory.
 
@@ -116,19 +121,26 @@ def generate_edges_from_pdb_dir(
     list[Path]
         A list of paths to the generated edge files.
     """
+    if isinstance(pdb_dir, str):
+        pdb_dir = Path(pdb_dir)
+    if isinstance(output_dir, str):
+        output_dir = Path(output_dir)
+
     pdbs = io.iter_target_pdbs(pdb_dir, cfg.patterns)
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Bind extra args so map receives a single iterable
+    worker = partial(write_edges_file_for_pdb, out_dir=output_dir, cutoff=cfg.cutoff)
+
     paths: list[Path] = []
     with ProcessPoolExecutor() as ex:
-        for p in ex.map(
-            lambda pth: write_edges_file_for_pdb(pth, output_dir, cfg.cutoff), pdbs
-        ):
+        for p in ex.map(worker, pdbs):
             paths.append(p)
     return paths
 
 
 def generate_edges_from_tar(
-    tar_file: Path, output_base_dir: Path, cfg: EdgeGenConfig
+    tar_file: Path | str, output_base_dir: Path | str, cfg: EdgeGenConfig
 ) -> Path:
     """Generate edge files from a compressed PDB tarball.
 
@@ -140,6 +152,10 @@ def generate_edges_from_tar(
     Returns:
         Path to the resulting .tar.gz archive containing the generated edge data.
     """
+    if isinstance(tar_file, str):
+        tar_file = Path(tar_file)
+    if isinstance(output_base_dir, str):
+        output_base_dir = Path(output_base_dir)
     base = tar_file.with_suffix("").with_suffix("").name
     pdb_dir = io.safe_extract_tar_gz(tar_file, io.tmp_root() / base)
     out_dir = output_base_dir / f"{base}_edges"
@@ -153,17 +169,21 @@ def generate_edges_from_tar(
 
 
 def generate_edges_from_tar_dir(
-    tar_dir: Path, output_base_dir: Path, cfg: EdgeGenConfig
+    tar_dir: Path | str, output_base_dir: Path | str, cfg: EdgeGenConfig
 ) -> list[Path]:
     """Generate edge files for all `.tar.gz` archives within a directory.
 
     Args:
-        tar_dir (Path): Directory containing the source archive files.
-        output_base_dir (Path): Root directory where generated edge files are saved.
+        tar_dir (Path | str): Directory containing the source archive files.
+        output_base_dir (Path | str): Root directory where generated edge files are saved.
         cfg (EdgeGenConfig): Configuration options for the edge generation process.
 
     Returns:
         list[Path]: Paths to the generated edge files corresponding to each archive.
     """
+    if isinstance(tar_dir, str):
+        tar_dir = Path(tar_dir)
+    if isinstance(output_base_dir, str):
+        output_base_dir = Path(output_base_dir)
     tars = sorted(tar_dir.glob("*.tar.gz"))
     return [generate_edges_from_tar(t, output_base_dir, cfg) for t in tars]
