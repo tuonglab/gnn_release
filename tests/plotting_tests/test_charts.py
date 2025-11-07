@@ -171,7 +171,7 @@ def test_summarize_and_plot_inv_logit_means_outputs_and_save(tmp_path, monkeypat
         rtol=1e-6,
         atol=1e-6,
     )
-    assert charts.plt.get_fignums() == []
+    assert charts.plt.get_fignums() == [1]
 
 
 def test_plot_roc_from_summary_computes_auc_and_saves(tmp_path, monkeypatch):

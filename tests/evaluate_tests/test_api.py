@@ -1,72 +1,91 @@
-from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest import mock
 
-import tcrgnn.evaluate.api as api
+import pytest
+import torch
+from torch_geometric.data import Data
 
-
-class DummyLoaderWithLen:
-    def __init__(self, batch):
-        self._batch = batch
-
-    def __iter__(self):
-        return iter([self._batch])
-
-    def __len__(self):
-        return 1
+from tcrgnn.evaluate import api
 
 
-class EmptyLoader:
-    def __iter__(self):
-        return iter([])
+@pytest.fixture
+def sample_graphs():
+    return [Data(x=torch.randn(3, 5)), Data(x=torch.randn(2, 5))]
 
 
-def test_evaluate_predicts_on_unwrapped_batch(monkeypatch):
-    graph = SimpleNamespace(num_node_features=42)
-    test_data = [[graph]]
-    sample_graphs = ["graph_a", "graph_b"]
-    sample_scores = [0.7, 0.3]
+def test_evaluate_model_calls_dependencies(monkeypatch, sample_graphs):
+    records = {}
 
-    mock_gat = MagicMock(return_value="base_model")
-    mock_device = object()
-    mock_loader = DummyLoaderWithLen((sample_graphs,))
-    mock_trained_model = "trained_model"
+    class DummyGAT:
+        def __init__(self, nfeat, nhid, nclass, dropout):
+            records["base_model_args"] = {
+                "nfeat": nfeat,
+                "nhid": nhid,
+                "nclass": nclass,
+                "dropout": dropout,
+            }
 
-    mock_get_device = MagicMock(return_value=mock_device)
-    mock_load_trained = MagicMock(return_value=mock_trained_model)
-    mock_make_loader = MagicMock(return_value=mock_loader)
-    mock_predict = MagicMock(return_value=sample_scores)
+    fake_model = mock.Mock()
 
-    # Patch inside the module under test
-    monkeypatch.setattr(api, "GATv2", mock_gat)
-    monkeypatch.setattr(api, "get_device", mock_get_device)
-    monkeypatch.setattr(api, "load_trained_model", mock_load_trained)
-    monkeypatch.setattr(api, "make_loader", mock_make_loader)
-    monkeypatch.setattr(api, "predict_on_graph_list", mock_predict)
+    def fake_get_device():
+        records["get_device_calls"] = records.get("get_device_calls", 0) + 1
+        return "cuda:0"
 
-    result = api.evaluate_model("model.pt", test_data)
+    def fake_load_trained_model(base_model, model_file, device):
+        records["load_args"] = (base_model, model_file, device)
+        return fake_model
 
-    assert result == sample_scores
-    mock_gat.assert_called_once_with(nfeat=42, nhid=375, nclass=2, dropout=0.17)
-    mock_load_trained.assert_called_once_with("base_model", "model.pt", mock_device)
-    mock_make_loader.assert_called_once_with(test_data)
-    mock_predict.assert_called_once_with(mock_trained_model, sample_graphs, mock_device)
+    def fake_predict_on_graph_list(model, graphs, device):
+        records["predict_args"] = (model, graphs, device)
+        return ["score-1", "score-2"]
+
+    monkeypatch.setattr(api, "GATv2", DummyGAT)
+    monkeypatch.setattr(api, "get_device", fake_get_device)
+    monkeypatch.setattr(api, "load_trained_model", fake_load_trained_model)
+    monkeypatch.setattr(api, "predict_on_graph_list", fake_predict_on_graph_list)
+
+    result = api.evaluate_model("checkpoint.pt", sample_graphs)
+
+    assert result == ["score-1", "score-2"]
+    assert records["base_model_args"] == {
+        "nfeat": 5,
+        "nhid": 375,
+        "nclass": 2,
+        "dropout": 0.17,
+    }
+    assert records["get_device_calls"] == 1
+    assert records["load_args"][1:] == ("checkpoint.pt", "cuda:0")
+    assert records["predict_args"][0] is fake_model
+    assert records["predict_args"][1] == sample_graphs
+    assert records["predict_args"][2] == "cuda:0"
+    fake_model.eval.assert_called_once()
 
 
-def test_evaluate_returns_empty_results_when_no_batches(monkeypatch):
-    graph = SimpleNamespace(num_node_features=10)
-    test_data = [[graph]]
-
-    monkeypatch.setattr(api, "GATv2", MagicMock(return_value="base_model"))
-    monkeypatch.setattr(api, "get_device", MagicMock(return_value="device"))
+def test_evaluate_model_respects_explicit_device(monkeypatch, sample_graphs):
+    monkeypatch.setattr(api, "GATv2", lambda **_: mock.Mock())
     monkeypatch.setattr(
-        api, "load_trained_model", MagicMock(return_value="trained_model")
+        api, "load_trained_model", lambda base_model, model_file, device: mock.Mock()
     )
-    monkeypatch.setattr(api, "make_loader", MagicMock(return_value=EmptyLoader()))
+    monkeypatch.setattr(
+        api, "predict_on_graph_list", lambda model, graphs, device: ["ok"]
+    )
+    monkeypatch.setattr(
+        api, "get_device", mock.Mock(side_effect=AssertionError("should not call"))
+    )
 
-    predict_mock = MagicMock()
-    monkeypatch.setattr(api, "predict_on_graph_list", predict_mock)
+    result = api.evaluate_model("checkpoint.pt", sample_graphs, device="cpu")
+    assert result == ["ok"]
 
-    result = api.evaluate_model("model.pt", test_data)
 
-    assert result == []
-    predict_mock.assert_not_called()
+def test_evaluate_model_requires_list(sample_graphs):
+    with pytest.raises(TypeError, match="Expected a list of Data objects"):
+        api.evaluate_model("checkpoint.pt", sample_graphs[0])
+
+
+def test_evaluate_model_rejects_empty_list():
+    with pytest.raises(ValueError, match="empty"):
+        api.evaluate_model("checkpoint.pt", [])
+
+
+def test_evaluate_model_requires_data_instances(sample_graphs):
+    with pytest.raises(TypeError, match="PyG Data objects"):
+        api.evaluate_model("checkpoint.pt", [sample_graphs[0], object()])

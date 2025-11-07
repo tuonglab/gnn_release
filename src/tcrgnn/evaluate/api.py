@@ -1,60 +1,43 @@
-from collections.abc import Iterable
-
-import torch
+from torch_geometric.data import Data
 
 from tcrgnn.evaluate._predict import predict_on_graph_list
 from tcrgnn.evaluate._utils import (
     get_device,
     load_trained_model,
-    make_loader,
 )
 from tcrgnn.models.gatv2 import GATv2
 
 
-def evaluate_model(
-    model_file: str,
-    test_data,
-    device: torch.device | None = None,
-) -> list[float]:
+def evaluate_model(model_file: str, graphs: list[Data], device=None):
     """
-    Evaluate a single sample composed of a list of graphs.
-
-    Assumptions:
-        - The loader will yield exactly one item.
-        - That item is a list or iterable of PyG graph objects.
-        - Returns flat per graph scores and labels for that one sample.
+    Evaluate a trained model on a provided list of PyG Data graphs.
 
     Args:
-        model_file: Path to a state dict saved via torch.save(model.state_dict(), path).
-        test_data: Dataset or indexable container where test_data[0][0] is a PyG Data.
-        device: Optional device override. Uses CUDA if available, else CPU.
+        model_file: Path to the saved model checkpoint.
+        graphs: A list of PyG Data objects to evaluate.
+        device: Optional torch device ('cpu' or 'cuda').
 
     Returns:
-        list[float]: Per graph scores
+        Model prediction scores or evaluation metrics.
     """
-    # Infer feature dimension from the first graph of the first sample
-    nfeat = test_data[0][0].num_node_features
+    # Input validation
+    if not isinstance(graphs, list):
+        raise TypeError(f"Expected a list of Data objects, got {type(graphs).__name__}")
+    if len(graphs) == 0:
+        raise ValueError("The input list of graphs is empty.")
+    if not all(isinstance(g, Data) for g in graphs):
+        raise TypeError("All elements in the input list must be PyG Data objects.")
+
+    nfeat = graphs[0].num_node_features
     base_model = GATv2(nfeat=nfeat, nhid=375, nclass=2, dropout=0.17)
 
     device = device or get_device()
     model = load_trained_model(base_model, model_file, device)
 
-    # Your make_loader already fixes batch_size=1 and shuffle=False
-    loader = make_loader(test_data)
+    # Load model and move to device
+    model.eval()
 
-    # Optional safeguard if the DataLoader implements __len__
-    if hasattr(loader, "__len__"):
-        assert len(loader) == 1, "Loader must contain exactly one batch"
+    # Perform prediction
+    scores = predict_on_graph_list(model, graphs, device)
 
-    try:
-        batch = next(iter(loader))
-    except StopIteration:
-        return []
-
-    # Unwrap if DataLoader returned a single element inside a list or tuple
-    sample_graphs: Iterable = (
-        batch[0] if isinstance(batch, (list, tuple)) and len(batch) == 1 else batch
-    )
-
-    scores = predict_on_graph_list(model, sample_graphs, device)
     return scores

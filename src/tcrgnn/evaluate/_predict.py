@@ -10,7 +10,6 @@ def predict_on_graph_list(
     model: torch.nn.Module,
     graphs: Iterable,  # Iterable of PyG Data objects
     device: torch.device,
-    threshold: float = 0.5,
 ) -> tuple[list[float], list[int]]:
     """
     Run inference on an iterable of graphs belonging to a single sample.

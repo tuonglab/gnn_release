@@ -40,7 +40,7 @@ def boxplot_individual_sample(
 
     if save:
         plt.savefig(out_path, bbox_inches="tight")  # type: ignore[arg-type]
-
+    plt.show()
     plt.close(fig)
 
 
@@ -77,6 +77,7 @@ def scatterplot_individual_sample(
     if save:
         plt.savefig(out_path, bbox_inches="tight")  # type: ignore[arg-type]
 
+    plt.show()
     plt.close(fig)
 
 
@@ -133,7 +134,7 @@ def plot_inv_logit_per_source(
 
     if save:
         plt.savefig(out_dir / "inv_logit_boxplot.png", bbox_inches="tight")  # type: ignore[operator]
-
+    plt.show()
     plt.close(fig1)
 
     # scatterplot of means
@@ -147,7 +148,7 @@ def plot_inv_logit_per_source(
 
     if save:
         plt.savefig(out_dir / "inv_logit_mean_scatterplot.png", bbox_inches="tight")  # type: ignore[operator]
-
+    plt.show()
     plt.close(fig2)
 
     return summary
@@ -223,7 +224,7 @@ def summarize_and_plot_inv_logit_means(
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
 
-    fig = plt.figure(figsize=(16, 8))
+    plt.figure(figsize=(16, 8))
     sns.boxplot(
         data=summary_long, x="group", y="inv_logit_mean", orientation="vertical"
     )
@@ -237,8 +238,8 @@ def summarize_and_plot_inv_logit_means(
             out_dir / "inv_logit_mean_cancer_vs_control_boxplot.png",  # type: ignore[operator]
             bbox_inches="tight",
         )
-
-    plt.close(fig)
+    plt.show()
+    plt.show()
 
     return summary_long, summary_wide
 
@@ -319,7 +320,7 @@ def plot_roc_from_summary(
         out_path = Path(out_path)  # type: ignore[arg-type]
         out_path.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(out_path, bbox_inches="tight")
-
+    plt.show()
     plt.close(fig)
 
     roc_df = pd.DataFrame({"fpr": fpr_pts, "tpr": tpr_pts, "threshold": thresholds})
