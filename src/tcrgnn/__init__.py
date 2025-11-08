@@ -6,6 +6,7 @@ from .edge_gen.api import (
     generate_edges_from_tar_dir,
     write_edges_file_for_pdb,
 )
+from .evaluate._utils import write_scores_to_txt
 from .evaluate.api import evaluate_model
 from .graph_gen.api import (
     generate_graph_from_edge_file,
@@ -43,6 +44,7 @@ __all__ = [
     "generate_graphs_from_edge_dir",
     "GATv2",
     "evaluate_model",
+    "write_scores_to_txt",
     "boxplot_individual_sample",
     "plot_inv_logit_per_source",
     "scatterplot_individual_sample",

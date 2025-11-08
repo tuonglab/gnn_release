@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 from tcrgnn.posthoc_adjustment._clonal_frequency import add_row_frequencies
 from tcrgnn.posthoc_adjustment._transform import (
@@ -13,7 +14,7 @@ from tcrgnn.posthoc_adjustment._transform import (
 
 def transform_scores(
     model_output_txt: str | Path,
-    counts: list[float] | np.ndarray,
+    counts: pd.DataFrame,
 ) -> np.ndarray:
     """
     Read model outputs, add clonal frequencies, and return the final adjusted scores.

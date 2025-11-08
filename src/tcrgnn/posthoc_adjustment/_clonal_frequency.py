@@ -7,59 +7,50 @@ import pandas as pd
 
 def add_row_frequencies(
     model_output_txt: str | Path,
-    counts: list[float],
+    counts_df: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Read a model output file produced by write_scores_to_txt and attach
-    per sequence clonal frequencies based on provided counts.
-
-    Each row corresponds to a sequence–score pair. Counts are summed per
-    unique sequence and normalized to produce clonal_frequency.
-
-    The values in `counts` may represent:
-        - UMI count
-        - duplicate_count
-        - consensus_count
-        - or any other abundance proxy available from preprocessing
-
-    These counts are aggregated across identical sequences, allowing
-    clonal expansions to influence downstream post hoc score adjustments.
+    Attach per-sequence clonal frequencies to a model output file.
 
     Args:
-        model_output_txt: Path to a CSV containing two columns: sequence, score.
-        counts: Per row counts aligned to the input file.
+        model_output_txt: Path to a CSV (no header) with two columns: sequence, score.
+        counts_df: DataFrame where:
+            - first column is the sequence
+            - second column is the clonal frequency
 
     Returns:
-        DataFrame containing:
+        DataFrame with columns:
             - sequence
             - score
-            - count
             - clonal_frequency
 
     Raises:
-        ValueError: When counts length does not match file rows or total count is zero.
+        ValueError: if clonal frequencies are missing for any sequences.
     """
+    # Read model output (no header)
     df = pd.read_csv(
         model_output_txt,
         header=None,
         sep=",",
         names=["sequence", "score"],
-        dtype={"sequence": str, "score": float},
+        dtype={0: str, 1: float},
     )
 
-    if len(df) != len(counts):
-        raise ValueError(
-            "Length of counts does not match number of sequences in model output."
-        )
+    # Normalize column names
+    seq_col, freq_col = counts_df.columns[:2]
+    counts_df = counts_df.loc[:, [seq_col, freq_col]].rename(
+        columns={seq_col: "sequence", freq_col: "clonal_frequency"}
+    )
 
-    df["count"] = counts
+    # Drop duplicate sequences, keep first
+    counts_df = counts_df.drop_duplicates(subset=["sequence"], keep="first")
 
-    per_seq = df.groupby("sequence", dropna=False)["count"].sum()
-    total = per_seq.sum()
-    if total <= 0:
-        raise ValueError("Total counts must be positive to compute frequencies.")
+    # Merge on sequence (many-to-one now guaranteed)
+    merged = df.merge(counts_df, on="sequence", how="left", validate="m:1")
 
-    freq_map = (per_seq / total).to_dict()
-    df["clonal_frequency"] = df["sequence"].map(freq_map)
+    # Check for missing frequencies
+    if merged["clonal_frequency"].isnull().any():
+        missing = merged.loc[merged["clonal_frequency"].isnull(), "sequence"].unique()
+        raise ValueError(f"Missing clonal frequencies for sequences: {missing}")
 
-    return df
+    return merged[["sequence", "score", "clonal_frequency"]]
