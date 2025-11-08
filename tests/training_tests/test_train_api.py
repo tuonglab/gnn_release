@@ -37,10 +37,9 @@ def test_train_model_calls_pipeline_with_expected_args(monkeypatch, tmp_path, ca
     # Stub train to record its arguments
     train_calls = {}
 
-    def fake_train(model, train_set, num_epochs, cfg, device, save_path):
+    def fake_train(model, train_set, cfg, save_path, device):
         train_calls["model"] = model
         train_calls["train_set"] = train_set
-        train_calls["num_epochs"] = num_epochs
         train_calls["cfg"] = cfg
         train_calls["device"] = device
         train_calls["save_path"] = save_path
@@ -81,7 +80,6 @@ def test_train_model_calls_pipeline_with_expected_args(monkeypatch, tmp_path, ca
 
     # Train should receive our exact train set object and expected args
     assert train_calls["train_set"] is fake_train_set
-    assert train_calls["num_epochs"] == cfg.epochs
     assert train_calls["cfg"] is cfg
     assert train_calls["save_path"] is save_path
 

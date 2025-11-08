@@ -28,6 +28,6 @@ def train_model(
     model.to(device)
 
     # match test’s expected train signature
-    train(model, train_set, cfg.epochs, cfg, device, save_path)
+    train(model, train_set, cfg, save_path, device)
 
     print(f"Training complete. Model saved to {save_path.model_dir}")

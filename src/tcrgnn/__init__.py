@@ -23,6 +23,7 @@ from .plotting.charts import (
     summarize_and_plot_inv_logit_means,
 )
 from .posthoc_adjustment.api import summary_scores, transform_scores
+from .training._config import TrainConfig, TrainPaths
 from .training.api import train_model
 from .utils._common_utils import (
     cleanup,
@@ -63,4 +64,6 @@ __all__ = [
     "safe_extract_tar_gz",
     "is_within_directory",
     "load_pca_encoding",
+    "TrainConfig",
+    "TrainPaths",
 ]
